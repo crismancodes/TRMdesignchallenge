@@ -48,9 +48,92 @@ const ITEMS=[
    {q:'No references to the flag remain',s:'ok',e:'Search finds 0 matches after the change'},
    {q:'Flag has been at 100% in production',s:'ok',e:'Fully rolled out for 38 days'},
    {q:'No runtime behavior change',s:'ok',e:'Only the dead branch removed, snapshots unchanged'}],
-  assume:[],files:[{n:'src/ (4 files)',a:0,d:58}],checks:'CI 4 of 4 passing'}
+  assume:[],files:[{n:'src/ (4 files)',a:0,d:58}],checks:'CI 4 of 4 passing'},
+ {id:'ENG-436',title:'Archive projects with no activity in 90 days',agent:'Linear Agent',from:'loop',origin:'Loop: Workspace hygiene',ago:'3m',tests:true,sensitive:null,majorDep:false,kind:'cleanup',
+  q:{text:'14 projects match. Should I notify their members before archiving them?',ctx:'Archiving hides a project from the sidebar and from views. Members can restore it, but they will not know it was archived unless someone tells them.',opts:['Archive now, no notice','Notify members, archive in 7 days (safer)','Show me the list first']},
+  criteria:[],assume:[],files:[],checks:'No pull request yet'},
+ {id:'ENG-424',title:'Retry failed invoice syncs to Stripe',agent:'Linear Agent',from:'loop',origin:'Loop: Triage bugs',ago:'9m',tests:false,sensitive:'billing',majorDep:false,kind:'bugfix',
+  criteria:[
+   {q:'Failed syncs retry on the next hourly run',s:'ok',e:'invoice-sync.spec.ts covers the retry path'},
+   {q:'No invoice is sent to Stripe twice',s:'gap',e:'An idempotency key was added, but its integration test is failing'},
+   {q:'Sync errors are logged with the invoice ID',s:'ok',e:'Logger call added in sync-invoices.ts'}],
+  assume:['Reused the existing hourly job instead of adding a new queue'],
+  files:[{n:'billing/sync-invoices.ts',a:48,d:12,diff:['- await stripe.invoices.create(payload);','+ await stripe.invoices.create(payload, {','+   idempotencyKey: `invoice-${invoice.id}-${invoice.version}`,','+ });']},{n:'billing/invoice-sync.spec.ts',a:36,d:0}],
+  checks:'CI 3 of 4 passing'},
+ {id:'ENG-421',title:'Add rate limiting to the login endpoint',agent:'Codex',from:'me',origin:'Delegated by you',ago:'18m',tests:true,sensitive:'authentication',majorDep:false,kind:'feature',
+  criteria:[
+   {q:'Blocks an IP and email after 10 failed attempts in 5 minutes',s:'ok',e:'rate-limit.spec.ts checks the 11th attempt'},
+   {q:'Returns 429 with a Retry-After header',s:'ok',e:'Response test asserts both'},
+   {q:'Single sign-on logins are not rate limited',s:'gap',e:'No test covers the SSO callback route'}],
+  assume:['Keyed the limit on IP address and email together','Stored counters in the existing Redis cache'],
+  files:[{n:'auth/login.ts',a:19,d:4},{n:'auth/rate-limit.ts',a:41,d:0,diff:['+ const key = `login:${ip}:${email.toLowerCase()}`;','+ const attempts = await redis.incr(key);','+ if (attempts === 1) await redis.expire(key, 300);','+ if (attempts > 10) return tooManyRequests(res, 300);']},{n:'auth/rate-limit.spec.ts',a:52,d:0}],
+  checks:'CI 4 of 4 passing'},
+ {id:'ENG-418',title:'Paginate the audit log API',agent:'Cursor',from:'me',origin:'Delegated by you',ago:'27m',tests:true,sensitive:null,majorDep:false,kind:'feature',
+  criteria:[
+   {q:'Returns 50 entries per page by default',s:'ok',e:'audit-log.spec.ts checks the page size'},
+   {q:'Uses cursor pagination, not offsets',s:'ok',e:'Cursor built from the entry timestamp and ID'},
+   {q:'Existing API clients keep working',s:'gap',e:'No test calls the endpoint without pagination parameters'}],
+  assume:['Capped the page size at 200'],
+  files:[{n:'api/audit-log.ts',a:38,d:11},{n:'api/audit-log.spec.ts',a:27,d:3}],
+  checks:'CI 4 of 4 passing'},
+ {id:'ENG-427',title:'Bump eslint from 8.57 to 9.12',agent:'Linear Agent',from:'loop',origin:'Loop: Dependency updates',ago:'45m',tests:true,sensitive:null,majorDep:true,kind:'deps',
+  criteria:[
+   {q:'Lint passes with no new warnings',s:'ok',e:'CI lint step passing, 0 new warnings'},
+   {q:'Config moves to the flat config format',s:'ok',e:'.eslintrc.json replaced by eslint.config.js'},
+   {q:'Custom rules still load',s:'ok',e:'All 3 local rules run in CI'}],
+  assume:['Dropped two plugins with no ESLint 9 release, because no rule used them'],
+  files:[{n:'eslint.config.js',a:34,d:0},{n:'.eslintrc.json',a:0,d:29},{n:'package.json',a:3,d:5},{n:'pnpm-lock.yaml',a:142,d:198}],
+  checks:'CI 4 of 4 passing'},
+ {id:'ENG-430',title:'Fix a broken link in the onboarding checklist',agent:'Linear Agent',from:'loop',origin:'Loop: Docs freshness',ago:'1h',tests:true,sensitive:null,majorDep:false,kind:'docs',
+  criteria:[
+   {q:'The Import issues link opens the importer docs',s:'ok',e:'Link checker passes on onboarding.md'},
+   {q:'No other broken links in the checklist',s:'ok',e:'All 9 links checked'}],
+  assume:[],files:[{n:'docs/onboarding.md',a:1,d:1}],checks:'CI 3 of 3 passing'},
+ {id:'ENG-433',title:'Add labels to icon-only buttons in the editor toolbar',agent:'Cursor',from:'me',origin:'Delegated by you',ago:'2h',tests:true,sensitive:null,majorDep:false,kind:'a11y',
+  criteria:[
+   {q:'Every icon-only button has an accessible name',s:'ok',e:'Accessibility check finds 0 unnamed buttons'},
+   {q:'Labels match the existing tooltips',s:'ok',e:'Labels reuse the tooltip strings'},
+   {q:'No visual change',s:'ok',e:'Visual snapshots unchanged'}],
+  assume:[],files:[{n:'src/editor/toolbar.tsx',a:9,d:9}],checks:'CI 4 of 4 passing'}
 ];
 const TOTAL=ITEMS.length;
+
+/* ---------- Created and To review: ordinary pull requests, as Linear's Reviews shows them today ---------- */
+const PRS=[
+ {id:'1838',tab:'created',title:'Move notification preferences onto one settings page',author:'You',ago:'1d',status:'ready',reviewers:['Jordan Park'],checks:'4 of 4 passing',branch:'notification-settings',a:240,d:310,
+  summary:'Combines the email, desktop and mobile notification settings into one page, with a section per channel. Old settings URLs redirect to the new page.',files:['src/settings/notifications.tsx','src/settings/routes.ts','src/settings/notifications.spec.tsx']},
+ {id:'1853',tab:'created',ref:'ENG-387'},
+ {id:'1855',tab:'created',ref:'ENG-421'},
+ {id:'1857',tab:'created',ref:'ENG-412'},
+ {id:'1842',tab:'created',title:'Add saved filters to the Projects view',author:'You',ago:'2h',status:'review',reviewers:['Maya Chen'],checks:'4 of 4 passing',branch:'saved-filters',a:186,d:22,
+  summary:'Lets people save a set of filters on the Projects view and pick it from a menu. Saved filters are per user for now.',files:['src/projects/saved-filters.tsx','src/projects/filters-menu.tsx','src/api/saved-filters.ts']},
+ {id:'1829',tab:'created',title:'Fix flicker when resizing the issue sidebar',author:'You',ago:'3d',status:'changes',reviewers:['Priya Shah'],checks:'4 of 4 passing',branch:'sidebar-resize',a:31,d:14,
+  summary:'Throttles the resize handler and moves the width into a CSS variable, so the sidebar no longer repaints on every pointer move.',note:'Priya Shah: the resize handle still jumps on Safari.',files:['src/issue/sidebar.tsx','src/issue/sidebar.css']},
+ {id:'1851',tab:'created',title:'Spike: offline mode for the desktop app',author:'You',ago:'5d',status:'draft',reviewers:[],checks:'2 of 4 passing',branch:'offline-spike',a:612,d:40,
+  summary:'Exploratory. Caches the last 500 issues locally and queues edits while offline. Not ready for review.',files:['desktop/offline/cache.ts','desktop/offline/queue.ts','desktop/main.ts']},
+ {id:'1847',tab:'review',title:'Add CSV export to Insights',author:'Maya Chen',ago:'40m',status:'requested',checks:'3 of 3 passing',branch:'insights-csv',a:142,d:8,
+  summary:'Adds an Export CSV action to every Insights chart. The export uses the chart’s current filters and grouping.',files:['src/insights/export-csv.ts','src/insights/chart-menu.tsx','src/insights/export-csv.spec.ts']},
+ {id:'1849',tab:'review',title:'Move the cycles API to cursor pagination',author:'Diego Ruiz',ago:'3h',status:'requested',checks:'4 of 4 passing',branch:'cycles-cursor',a:96,d:51,
+  summary:'Replaces offset pagination on /cycles with cursors. Offsets keep working for one release, with a deprecation header.',files:['api/cycles.ts','api/pagination.ts','api/cycles.spec.ts']},
+ {id:'1844',tab:'review',title:'Tighten Content-Security-Policy headers on the web app',author:'Priya Shah',ago:'1d',status:'rereview',checks:'4 of 4 passing',branch:'csp-headers',a:44,d:19,
+  summary:'Removes unsafe-inline from script-src and moves the two remaining inline scripts into files. Updated after your last review.',files:['server/headers.ts','web/boot.ts','server/headers.spec.ts']},
+ {id:'1840',tab:'review',title:'Rewrite the onboarding email copy',author:'Sam Lee',ago:'2d',status:'requested',checks:'2 of 2 passing',branch:'onboarding-emails',a:58,d:61,
+  summary:'New copy for the three onboarding emails, shorter and in the product’s voice. No template changes.',files:['emails/onboarding/day-1.mdx','emails/onboarding/day-3.mdx','emails/onboarding/day-7.mdx']}
+];
+const PR_GROUPS={created:[['ready','Ready to merge'],['review','In review'],['changes','Changes requested'],['draft','Draft']],
+                 review:[['requested','Review requested'],['rereview','Re-review requested']]};
+const STATUS_LABEL={ready:'Ready to merge',review:'In review',changes:'Changes requested',draft:'Draft',requested:'Review requested',rereview:'Re-review requested'};
+/* a pull request an agent opened on an issue you delegated: it borrows its details from ITEMS */
+function prView(p){
+  if(!p.ref) return {...p,reviewers:p.reviewers||[]};
+  const i=get(p.ref);
+  return {...p,title:i.title,author:i.agent,agentPR:true,ago:i.ago,status:i.tests?'ready':'review',reviewers:[],checks:i.checks.replace('CI ',''),branch:i.id.toLowerCase(),a:adds(i),d:dels(i),files:i.files.map(f=>f.n)};
+}
+const prOpen=p=>p.st==='open'&&(!p.ref||get(p.ref).st==='pending');
+const prRows=tab=>{const rows=PRS.filter(p=>p.tab===tab&&prOpen(p)).map(prView);return PR_GROUPS[tab].flatMap(([k])=>rows.filter(r=>r.status===k))};
+const prGet=id=>{const p=PRS.find(x=>x.id===id);return p?prView(p):null};
+const AGENTS=new Set(ITEMS.map(i=>i.agent));
+const initials=n=>n==='You'?'Y':n[0];
 
 /* ---------- derived values ---------- */
 const adds=i=>i.files.reduce((n,f)=>n+f.a,0), dels=i=>i.files.reduce((n,f)=>n+f.d,0);
@@ -87,9 +170,11 @@ const defD=()=>({group:'risk',props:{id:true,agent:true,lines:true,age:true,risk
 const isDefD=()=>JSON.stringify(S.d)===JSON.stringify(defD());
 function fresh(){
   ITEMS.forEach(i=>{i.st='pending';i.ov={}});
-  S={sel:null,checked:new Set(),f:defF(),d:defD(),menu:null,sub:null,compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
+  PRS.forEach(p=>{p.st='open';if(p.status0)p.status=p.status0;else p.status0=p.status});
+  S={sel:null,tab:'agent',prSel:{created:null,review:null},checked:new Set(),f:defF(),d:defD(),menu:null,sub:null,compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
      rules:{tests:true,docs:true,small:false,deps:false,sens:false,evid:false}};
   S.sel=(ordered()[0]||{}).id||null;
+  ['created','review'].forEach(t=>S.prSel[t]=(prRows(t)[0]||{}).id||null);
 }
 const get=id=>ITEMS.find(i=>i.id===id);
 const pend=()=>ITEMS.filter(i=>i.st==='pending');
@@ -110,15 +195,22 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 /* ---------- render ---------- */
 function pendingCount(){return ITEMS.filter(i=>i.st==='pending').length}
-function renderList(){
+function renderHead(){
+  const ag=S.tab==='agent', nF=ag?activeF().length:0;
+  const off=ag?'':' disabled data-tip="Filters and display options work in Agent work"';
+  const tab=(k,l,n)=>`<button type="button" role="tab" class="tb${S.tab===k?' on':''}" data-act="tab" data-v="${k}" aria-selected="${S.tab===k}">${l}<span class="cnt">${n}</span></button>`;
+  return `<div class="lh"><div class="r"><b>Reviews</b><span class="hb">
+    ${ag?`<button class="ibtn" type="button" data-act="rules" data-tip="Review rules" aria-label="Review rules"><svg class="ico"><use href="#i-bolt"/></svg></button>`:''}
+    <button class="ibtn${S.menu==='filter'||nF?' on':''}" type="button" data-act="menu" data-v="filter" data-menu="filter" ${ag?'data-tip="Add Filter" data-k="F"':off} aria-label="Add filter" aria-expanded="${S.menu==='filter'}"><svg class="ico"><use href="#i-filter"/></svg></button>
+    <button class="ibtn${S.menu==='display'?' on':''}" type="button" data-act="menu" data-v="display" data-menu="display" ${ag?'data-tip="Show display options" data-k="⇧ V"':off} aria-label="Show display options" aria-expanded="${S.menu==='display'}"><svg class="ico"><use href="#i-display"/></svg></button></span></div>
+  <div class="seg" role="tablist" aria-label="Reviews">${tab('created','Created',prRows('created').length)}${tab('review','To review',prRows('review').length)}${tab('agent','Agent work',ordered().length)}<span class="tb new">New</span></div>
+  ${nF?`<div class="fchips">${activeF().map(F=>`<span class="fchip"><svg class="ico"><use href="#i-${F.ic}"/></svg>${F.l} <i>is</i> ${esc(fLabel(F.k))}<button type="button" data-act="unfilter" data-v="${F.k}" aria-label="Remove ${F.l} filter"><svg class="ico"><use href="#i-x"/></svg></button></span>`).join('')}${nF>1?'<button class="fclear" type="button" data-act="unfilter" data-v="all">Clear</button>':''}</div>`:''}</div>`;
+}
+function renderList(){return S.tab==='agent'?renderAgentList():renderPRList()}
+function renderAgentList(){
   const g=groups(), all=ordered();
   const P=S.d.props, nF=activeF().length;
-  let h=`<div class="lh"><div class="r"><b>Reviews</b><span class="hb">
-    <button class="ibtn" type="button" data-act="rules" data-tip="Review rules" aria-label="Review rules"><svg class="ico"><use href="#i-bolt"/></svg></button>
-    <button class="ibtn${S.menu==='filter'||nF?' on':''}" type="button" data-act="menu" data-v="filter" data-menu="filter" data-tip="Add Filter" data-k="F" aria-label="Add filter" aria-expanded="${S.menu==='filter'}"><svg class="ico"><use href="#i-filter"/></svg></button>
-    <button class="ibtn${S.menu==='display'?' on':''}" type="button" data-act="menu" data-v="display" data-menu="display" data-tip="Show display options" data-k="⇧ V" aria-label="Show display options" aria-expanded="${S.menu==='display'}"><svg class="ico"><use href="#i-display"/></svg></button></span></div>
-  <div class="seg"><span class="tb" title="Existing Linear tab, outside this prototype">Created</span><span class="tb" title="Existing Linear tab, outside this prototype">To review</span><span class="tb on">Agent work<span class="cnt">${all.length}</span></span><span class="tb new">New</span></div>
-  ${nF?`<div class="fchips">${activeF().map(F=>`<span class="fchip"><svg class="ico"><use href="#i-${F.ic}"/></svg>${F.l} <i>is</i> ${esc(fLabel(F.k))}<button type="button" data-act="unfilter" data-v="${F.k}" aria-label="Remove ${F.l} filter"><svg class="ico"><use href="#i-x"/></svg></button></span>`).join('')}${nF>1?'<button class="fclear" type="button" data-act="unfilter" data-v="all">Clear</button>':''}</div>`:''}</div>`;
+  let h=renderHead();
   if(!all.length) h+=nF?`<div class="empty"><p>No results match these filters.</p><button class="btn sm" type="button" data-act="unfilter" data-v="all">Clear filters</button></div>`:`<div class="empty"><p>Nothing waiting in this view.</p></div>`;
   const flat=S.d.group==='none';
   (flat?[{k:'all',l:''}]:GROUPS).forEach(({k,l})=>{
@@ -138,7 +230,48 @@ function renderList(){
   });
   return h;
 }
+function renderPRList(){
+  const rows=prRows(S.tab);
+  if(!rows.find(r=>r.id===S.prSel[S.tab])) S.prSel[S.tab]=rows[0]?rows[0].id:null;
+  const sel=S.prSel[S.tab];
+  let h=renderHead();
+  if(!rows.length) return h+`<div class="empty"><p>Nothing here. Every pull request in this tab is handled.</p></div>`;
+  PR_GROUPS[S.tab].forEach(([k,l])=>{
+    const g=rows.filter(r=>r.status===k); if(!g.length) return;
+    h+=`<div class="gh"><span>${l}<span class="n">${g.length}</span></span></div>`;
+    g.forEach(p=>{
+      h+=`<div class="rowwrap ${sel===p.id?'sel':''}"><button class="row" type="button" data-act="prselect" data-id="${p.id}" aria-current="${sel===p.id}">
+        <svg class="ico ri ${p.status==='draft'?'dr':'pr'}"><use href="#i-pr"/></svg><span class="t">${esc(p.title)}</span>
+        <span class="m"><span class="id">#${p.id}</span><span class="who"><span class="av${p.author==='Linear Agent'?' la':p.agentPR?'':' hu'}">${initials(p.author)}</span>${esc(p.author)}</span>${p.agentPR?'<span class="tagd">Delegated</span>':''}<span><span class="da">+${p.a}</span> <span class="dd">−${p.d}</span></span><span>${p.ago}</span></span>
+      </button></div>`;
+    });
+  });
+  return h;
+}
+function renderPRDetail(){
+  const p=prGet(S.prSel[S.tab]);
+  if(!p||!prOpen(PRS.find(x=>x.id===p.id))) return `<div class="empty"><h3>Select a pull request</h3><p>Pick one from the list to see it.</p></div>`;
+  let h=`<div class="dbody"><div class="dh"><span class="crumb"><svg class="ico"><use href="#i-pr"/></svg>Reviews<span>›</span><span class="id">#${p.id}</span></span><h3>${esc(p.title)}</h3>
+    <div class="m"><span class="who"><span class="av${p.author==='Linear Agent'?' la':p.agentPR?'':' hu'}">${initials(p.author)}</span>${esc(p.author)}</span> · <span class="br">main ← ${esc(p.branch)}</span> · ${p.ago} ago</div></div>`;
+  if(p.agentPR){
+    const i=get(p.ref), rk=risk(i);
+    h+=`<div class="qcard"><p>${esc(i.agent)} opened this pull request on an issue you delegated.</p><span style="font-size:13.5px;color:var(--muted)">It sits under ${STATUS_LABEL[p.status]} because its checks ${i.tests?'pass':'are still running'}. Nothing here shows whether it did what the issue asked. Agent work rates it <b style="color:var(--fg)">${LABEL[rk.level]}</b> and shows the evidence.</span><div class="opts"><button class="btn pri" type="button" data-act="toagent" data-id="${i.id}">Review in Agent work</button></div></div>`;
+  } else {
+    h+=`<div><div class="sh"><span>Summary</span></div><p class="sum">${esc(p.summary)}</p></div>`;
+    if(p.note) h+=`<div class="crit"><li class="gap"><span class="ic n">!</span><div><div class="q">Changes requested</div><div class="e">${esc(p.note)}</div></div></li></div>`;
+  }
+  h+=`<div class="facts2"><div><span>Status</span><b>${STATUS_LABEL[p.status]}</b></div><div><span>Reviewers</span><b>${p.reviewers.length?esc(p.reviewers.join(', ')):(S.tab==='review'?'You':'None yet')}</b></div><div><span>Checks</span><b class="${/^(\d+) of \1/.test(p.checks)?'okc':'badc'}">${esc(p.checks)}</b></div></div>`;
+  h+=`<div><div class="sh"><span>Changes</span><span><span class="da">+${p.a}</span> <span class="dd">−${p.d}</span></span></div><ul class="files">${p.files.map(f=>`<li><div class="fr"><span>${esc(f)}</span></div></li>`).join('')}</ul></div></div>`;
+  let bar;
+  if(p.agentPR) bar=`<button class="btn" type="button" data-act="toagent" data-id="${p.ref}">Review in Agent work</button><span class="sp"></span><button class="btn" type="button" disabled>Squash &amp; merge</button>`;
+  else if(S.tab==='review') bar=`<button class="btn pri" type="button" data-act="prdo" data-v="approve" data-id="${p.id}">Approve <kbd>A</kbd></button><button class="btn" type="button" data-act="prdo" data-v="changes" data-id="${p.id}">Request changes</button>`;
+  else if(p.status==='ready') bar=`<button class="btn pri" type="button" data-act="prdo" data-v="merge" data-id="${p.id}">Squash &amp; merge <kbd>A</kbd></button>`;
+  else if(p.status==='draft') bar=`<button class="btn pri" type="button" data-act="prdo" data-v="ready" data-id="${p.id}">Ready for review</button>`;
+  else bar=`<button class="btn" type="button" disabled>Squash &amp; merge</button><span class="wait">${p.status==='changes'?'Changes requested by '+esc(p.reviewers[0]):'Waiting on '+esc(p.reviewers.join(', '))}</span>`;
+  return h+`<div class="bar-d"><div class="r">${bar}</div></div>`;
+}
 function renderDetail(){
+  if(S.tab!=='agent') return renderPRDetail();
   const i=get(S.sel);
   if(!i||i.st!=='pending'){
     const done=pendingCount()===0;
@@ -157,7 +290,7 @@ function renderDetail(){
   h+=`<div><div class="sh"><span>Intent and outcome</span><span>${i.criteria.length} criteria from the issue</span></div><ul class="crit">${i.criteria.map(c=>`<li class="${c.s==='gap'?'gap':''}"><span class="ic ${c.s==='ok'?'g':'n'}">${c.s==='ok'?'✓':'!'}</span><div><div class="q">${esc(c.q)}</div><div class="e">${esc(c.e)}</div></div></li>`).join('')}</ul></div>`;
   h+=`<div><div class="sh"><span>What the agent assumed</span></div>${i.assume.length?`<ul class="assume">${i.assume.map((a,k)=>`<li class="${i.ov[k]?'ov':''}"><span>${esc(a)}</span><span class="bt"><button type="button" data-act="keep" data-id="${i.id}" data-k="${k}" aria-pressed="${!i.ov[k]}">Keep</button><button type="button" data-act="over" data-id="${i.id}" data-k="${k}" aria-pressed="${!!i.ov[k]}">Override</button></span></li>`).join('')}</ul>`:`<p style="font-size:14px;color:var(--muted)">None. The agent followed existing patterns.</p>`}</div>`;
   h+=`<div><div class="sh"><span>Changes</span><span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span></div><ul class="files">${i.files.map((f,k)=>{const key=i.id+':'+k;return `<li><div class="fr"><span>${esc(f.n)} <span class="da">+${f.a}</span> <span class="dd">−${f.d}</span></span>${f.diff?`<button type="button" data-act="diff" data-key="${key}">${S.open[key]?'Hide':'Preview'}</button>`:''}</div>${f.diff&&S.open[key]?`<div class="diff">${f.diff.map(l=>`<div class="${l[0]==='+'?'a':'d'}">${esc(l)}</div>`).join('')}</div>`:''}</li>`}).join('')}</ul></div>`;
-  h+=`<div class="chk"><span><b>${esc(i.checks)}</b></span><span>No preview deployment</span></div></div>`;
+  h+=`<div class="chk"><span><b class="${i.tests?'':'badc'}">${esc(i.checks)}</b></span><span>No preview deployment</span></div></div>`;
   h+=`<div class="bar-d">${S.compose?`<textarea id="cmt" placeholder="Tell ${esc(i.agent)} what to change">${esc(S.text)}</textarea>
     <div class="steer"><button type="button" data-act="steer" data-t="Add a test for the missing case.">Add a test for the gap</button><button type="button" data-act="steer" data-t="Split this into smaller pull requests.">Split it up</button><button type="button" data-act="steer" data-t="Explain the assumption before changing it.">Ask why</button></div>`:''}
     <div class="r">${S.compose?`<button class="btn pri" type="button" data-act="send" data-id="${i.id}">Send to ${esc(i.agent)}</button><button class="btn" type="button" data-act="cancel">Cancel</button>`
@@ -177,7 +310,7 @@ function renderRules(){
 function renderAll(){
   const app=document.getElementById('app');
   const ls=app.querySelector('.ls'), dt=app.querySelector('.dt'); const sl=ls?ls.scrollTop:0, sd=dt&&dt.dataset.sel===S.sel?dt.scrollTop:0;
-  app.innerHTML=`<aside class="sb"><div class="sbn" aria-hidden="true"><div class="ws"><span class="wsa">AE</span>Acme Eng<span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><span class="tm" style="flex:none">E</span><span>Engineering</span></div><div class="nv sub"><svg class="ico"><use href="#i-triage"/></svg><span>Triage</span><em>2</em></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div></div><div class="sbf"><div class="keys"><span><kbd>J</kbd><kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span><span><kbd>F</kbd> filter</span></div><div class="acts"><a class="btn sm" href="index.html#prototype">← Case study</a><button class="btn sm" data-reset type="button">Reset demo</button></div></div></aside>
+  app.innerHTML=`<aside class="sb"><div class="sbn" aria-hidden="true"><div class="tbar"><span class="ib"><svg class="ico"><use href="#i-sidebar"/></svg></span><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-clock"/></svg></span><span class="ib"><svg class="ico"><use href="#i-chevl"/></svg></span><span class="ib dim"><svg class="ico"><use href="#i-chevr"/></svg></span></div><div class="ws"><span class="wsa">AE</span>Acme Eng<svg class="ico chev"><use href="#i-chevd"/></svg><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><svg class="ico tmi"><use href="#i-team"/></svg><span>Engineering<i class="car"></i></span></div><div class="nv sub"><svg class="ico"><use href="#i-home"/></svg><span>Home</span></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="sbh">Try</div><div class="nv"><svg class="ico"><use href="#i-plus"/></svg><span>Invite people</span></div><div class="nv"><svg class="ico"><use href="#i-initiatives"/></svg><span>Initiatives</span></div><div class="nv"><svg class="ico"><use href="#i-cycles"/></svg><span>Cycles</span></div></div><div class="sbf"><div class="keys"><span><kbd>J</kbd><kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span><span><kbd>F</kbd> filter</span></div><div class="acts"><svg class="ico lmark" aria-hidden="true"><use href="#i-linear"/></svg><a class="btn sm" href="index.html#prototype">← Case study</a><button class="btn sm" data-reset type="button">Reset demo</button></div></div></aside>
     <section class="ls" aria-label="Review queue">${renderList()}</section>
     <section class="dt" data-sel="${S.sel}" aria-label="Evidence">${renderDetail()}</section>
     ${S.menu?renderMenu():''}
@@ -223,7 +356,16 @@ function apply(ids,st,msg){
   const o=ordered(); S.sel=o.length?o[Math.min(idx,o.length-1)].id:null;
   toast(msg,true); renderAll();
 }
-function move(d){const o=ordered();if(!o.length)return;const k=o.findIndex(i=>i.id===S.sel);S.sel=o[Math.max(0,Math.min(o.length-1,(k<0?0:k+d)))].id;S.compose=false;renderAll();const r=document.querySelector('.rowwrap.sel');if(r)r.scrollIntoView({block:'nearest'})}
+function prDo(id,v){
+  const p=PRS.find(x=>x.id===id), rows=prRows(S.tab).map(r=>r.id), idx=Math.max(0,rows.indexOf(id));
+  S.undo={pr:id,st:p.st,status:p.status,tab:S.tab};
+  const msg={approve:'Approved #'+id+'. '+p.author+' can merge it now.',changes:'Requested changes on #'+id+'.',merge:'Merged #'+id+' into main.',ready:'#'+id+' is ready for review.'}[v];
+  if(v==='ready') p.status='review'; else p.st='done';
+  const o=prRows(S.tab); S.prSel[S.tab]=v==='ready'?id:(o.length?o[Math.min(idx,o.length-1)].id:null);
+  toast(msg,true); renderAll();
+}
+function prMove(d){const o=prRows(S.tab);if(!o.length)return;const k=o.findIndex(p=>p.id===S.prSel[S.tab]);S.prSel[S.tab]=o[Math.max(0,Math.min(o.length-1,(k<0?0:k+d)))].id;renderAll();const r=document.querySelector('.rowwrap.sel');if(r)r.scrollIntoView({block:'nearest'})}
+function move(d){if(S.tab!=='agent')return prMove(d);const o=ordered();if(!o.length)return;const k=o.findIndex(i=>i.id===S.sel);S.sel=o[Math.max(0,Math.min(o.length-1,(k<0?0:k+d)))].id;S.compose=false;renderAll();const r=document.querySelector('.rowwrap.sel');if(r)r.scrollIntoView({block:'nearest'})}
 
 /* ---------- events ---------- */
 const appEl=document.getElementById('app');
@@ -231,8 +373,12 @@ appEl.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]'); if(!t) return;
   const a=t.dataset.act, id=t.dataset.id;
   if(a==='rulesbg'){if(e.target!==t)return;S.rulesOpen=false;return renderAll()}
-  if(a==='select'){S.sel=id;S.compose=false;S.text='';renderAll()}
-  else if(a==='menu'){openMenu(t.dataset.v)}
+  if(a==='tab'){S.tab=t.dataset.v;S.menu=null;S.compose=false;S.checked.clear();renderAll()}
+  else if(a==='prselect'){S.prSel[S.tab]=id;renderAll()}
+  else if(a==='toagent'){S.tab='agent';S.f=defF();S.sel=id;S.compose=false;renderAll()}
+  else if(a==='prdo'){prDo(id,t.dataset.v)}
+  else if(a==='select'){S.sel=id;S.compose=false;S.text='';renderAll()}
+  else if(a==='menu'){if(S.tab==='agent')openMenu(t.dataset.v)}
   else if(a==='menuclose'){S.menu=null;S.sub=null;renderAll()}
   else if(a==='sub'){S.sub=t.dataset.v;renderAll()}
   else if(a==='setf'){const k=t.dataset.k,v=t.dataset.v;S.f[k]=S.f[k]===v?null:v;S.menu=null;S.sub=null;S.checked.clear();keepSel();renderAll()}
@@ -251,7 +397,8 @@ appEl.addEventListener('click',e=>{
   else if(a==='keep'){get(id).ov[t.dataset.k]=false;renderAll()}
   else if(a==='over'){get(id).ov[t.dataset.k]=true;renderAll()}
   else if(a==='diff'){S.open[t.dataset.key]=!S.open[t.dataset.key];renderAll()}
-  else if(a==='undo'&&S.undo){const u=S.undo;u.ids.forEach((x,k)=>{get(x).st=u.prev[k]});S.sel=u.sel;S.toast=null;S.undo=null;renderAll()}
+  else if(a==='undo'&&S.undo&&S.undo.pr){const u=S.undo,p=PRS.find(x=>x.id===u.pr);p.st=u.st;p.status=u.status;S.tab=u.tab;S.prSel[u.tab]=u.pr;S.toast=null;S.undo=null;renderAll()}
+  else if(a==='undo'&&S.undo){const u=S.undo;S.tab='agent';u.ids.forEach((x,k)=>{get(x).st=u.prev[k]});S.sel=u.sel;S.toast=null;S.undo=null;renderAll()}
   else if(a==='batch'){const ids=[...S.checked];apply(ids,'approved','Approved '+ids.length+' results. Merging now.')}
   else if(a==='rules'){S.menu=null;S.rulesOpen=true;renderAll()}
   else if(a==='rulesclose'){S.rulesOpen=false;renderAll()}
@@ -271,6 +418,10 @@ document.addEventListener('keydown',e=>{
   const tg=e.target; if(tg&&(tg.tagName==='TEXTAREA'||tg.tagName==='INPUT'&&tg.type==='text')){if(e.key==='Escape'){S.compose=false;renderAll()}return}
   if(S.rulesOpen){if(e.key==='Escape'){S.rulesOpen=false;renderAll()}return}
   if(S.menu){if(e.key==='Escape'){S.menu=null;S.sub=null;renderAll()}return}
+  if(S.tab!=='agent'){const k=e.key.toLowerCase();
+    if(k==='j'||k==='arrowdown'){e.preventDefault();move(1)}else if(k==='k'||k==='arrowup'){e.preventDefault();move(-1)}
+    else if(k==='a'){const p=prGet(S.prSel[S.tab]);if(p&&!p.agentPR&&(S.tab==='review'||p.status==='ready'))prDo(p.id,S.tab==='review'?'approve':'merge')}
+    return}
   if(e.key==='f'&&!e.shiftKey){e.preventDefault();return openMenu('filter')}
   if(e.key==='V'&&e.shiftKey){e.preventDefault();return openMenu('display')}
   const k=e.key.toLowerCase(), i=get(S.sel);

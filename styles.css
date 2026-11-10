@@ -371,3 +371,36 @@ html.full body{overflow:hidden;font-size:13px}
 /* agent avatar centered on its name */
 .who{display:inline-flex;align-items:center;gap:5px;vertical-align:middle;line-height:1}
 .who .av{margin:0;vertical-align:0;flex:none}
+
+/* Created and To review tabs */
+.seg button.tb{font:inherit;font-size:13px;background:transparent;cursor:pointer}
+.seg button.tb:hover{color:var(--fg)}
+.seg button.tb.on{background:var(--chip);color:var(--fg)}
+.ibtn[disabled]{opacity:.4;cursor:default}
+.ibtn[disabled]:hover{background:transparent;color:var(--muted)}
+.ibtn[disabled][data-tip]:hover::after{content:attr(data-tip);opacity:1}
+.row .ri.dr{color:var(--faint)}
+.av.hu{background:#4a4a50}
+.tagd{font-size:11px;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:0 6px;line-height:17px}
+.br{font-family:var(--mono);font-size:12px}
+.sum{color:var(--fg-2);font-size:14px;max-width:70ch}
+.facts2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.facts2>div{background:var(--surface);padding:10px 12px;display:grid;gap:2px}
+.facts2 span{color:var(--muted);font-size:12px}
+.facts2 b{font-weight:500;font-size:13.5px}
+.okc{color:var(--ok)}
+.chk b.badc,.badc{color:var(--risk)}
+.wait{color:var(--muted);font-size:13px}
+
+/* sidebar: Linear's top bar, switcher chevron, team caret, Try group */
+.tbar{display:flex;align-items:center;gap:2px;padding:0 0 8px 2px}
+.tbar .ib,.ws .ib{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--muted)}
+.tbar .sp{flex:1}
+.tbar .ib.dim{color:var(--faint)}
+.ws .chev{width:13px;height:13px;color:var(--muted);margin-left:-2px}
+.nv.team .tmi{color:var(--ok)}
+.nv .car{display:inline-block;border:3.5px solid transparent;border-top:4px solid var(--muted);margin:0 0 -1px 8px;vertical-align:middle}
+.nv.team span{flex:none}
+.sbf .acts{align-items:center}
+.lmark{width:18px;height:18px;color:var(--muted);margin-right:4px}
+.nv.team{justify-content:flex-start}

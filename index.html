@@ -30,7 +30,7 @@
 <section class="view" id="v-problem"><div class="wrap">
   <p class="eyebrow">Problem and direction</p>
   <h1 class="wide">Linear now has a place to review agent work. It still can’t show you whether the agent did what you asked.</h1>
-  <p class="lede">Linear lets you hand an issue to an agent and keeps you accountable for the result, and Reviews now brings the pull request into Linear with a risk score and a Guide to what changed. Writing the code is no longer the slow part; deciding whether the agent did what the issue asked is.</p>
+  <p class="lede">Linear lets you hand an issue to an agent and keeps you accountable for the result, and Reviews now brings the pull request into Linear, with a risk score and a Guide to what changed when a provider is connected. Writing the code is no longer the slow part; deciding whether the agent did what the issue asked is.</p>
 
   <div class="sec">
     <h2>What the product does today</h2>
@@ -40,7 +40,7 @@
       <li><span>Output</span>A coding session works in the cloud and returns a draft pull request, with progress shown in a session on the issue.</li>
       <li><span>Reporting</span>Views filtered by Delegate and Insights by agent-session status describe agent work after it has happened.</li>
       <li><span>Reviews</span>Pull requests appear in a Reviews view, split into Created and To review, and can be grouped by status, author, repository, size or priority. Each one opens to an overview, a diff and a merge button. A connected provider can add a Risk score (Low, Typical, High or Very high risk, with optional explanations), and a Guide walks through the pull request as a story.</li>
-      <li><span>Linking</span>An issue links to a pull request through the issue ID in the branch name or title, or a closing keyword. It works when the ID is there: in my test, Resolves showed the issue within seconds. Before that, none of the 17 pull requests in my workspace carried an ID, so none showed an issue. Linking depends on a naming habit that agents don’t reliably follow.</li>
+      <li><span>Linking</span>An issue links to a pull request through the issue ID in the branch name or title, or a closing keyword. It works when the ID is there: in my test, Resolves showed the issue within seconds. Before that, none of the 17 pull requests in my workspace carried an ID, so none showed an issue. Linking depends on a naming habit that pull requests don’t reliably follow.</li>
       <li><span>Inbox</span>Priority inbox sorts notifications by source or by a filter you define.</li>
     </ul>
   </div>
@@ -58,7 +58,7 @@
 
   <div class="sec">
     <h2>A real test</h2>
-    <p>To check these claims against real work, I wrote an issue for a small change to this prototype, with eight acceptance criteria. One of them, “looks like part of Linear’s dark theme”, is a judgment an agent can’t prove. Claude Code did the work and opened a pull request with the issue ID in its title. This is that pull request in my Reviews view.</p>
+    <p>To check these claims against real work, I wrote an issue for a small change to this prototype, with eight acceptance criteria. One of them, “looks like part of Linear’s dark theme”, is a judgment an agent can’t prove. Claude Code did the work and opened a pull request with the issue ID in its title. It worked through my GitHub account, so Linear’s own agent may be labelled differently. This is that pull request in my Reviews view.</p>
     <figure class="evid"><img src="assets/reviews-test-sc-114.webp" width="2000" height="1078" loading="lazy" alt="Linear Reviews showing the test pull request. The sidebar says Checks: All passed and Resolves SC-114, the byline says Sean Crisman, and Squash and merge is the primary button."><figcaption class="note">The test pull request in my workspace’s Reviews view, Nov 10, 2026.</figcaption></figure>
     <ul class="facts">
       <li><span>Linked</span>Resolves shows the issue, but only its title. None of its eight acceptance criteria appear.</li>
@@ -99,7 +99,7 @@
       <li><span>Coverage</span>Share of agent results reviewed within one working day.</li>
       <li><span>Quality</span>Rework rate: results that came back with requested changes.</li>
       <li><span>Trust</span>Share approved by rule, and how often those are later reverted.</li>
-      <li><span>Counter</span>Approvals made without opening the evidence, and approvals later reverted.</li>
+      <li><span>Counter</span>Approvals made without opening the evidence.</li>
     </ul>
   </div>
 
@@ -149,7 +149,7 @@
       </div>
       <h3>B. Evidence on the pull request</h3><p>Each pull request opened in Reviews gets an evidence section on its overview, above the agent’s summary.</p>
       <span class="tag">Strengths</span><ul class="t"><li>Lands on a page people already use</li><li>Natural home for the evidence</li></ul>
-      <span class="tag">Weaknesses</span><ul class="t"><li>Still one at a time, sorted by age</li><li>You must already know which to open</li></ul>
+      <span class="tag">Weaknesses</span><ul class="t"><li>Still one at a time</li><li>You must already know which to open</li></ul>
       <p style="margin-top:12px"><span class="chip">Folded in: the evidence pane is this card</span></p>
     </div>
     <div class="card">
@@ -182,7 +182,7 @@
     <h2>What I cut</h2>
     <div class="grid2">
       <div class="card"><h3>Auto-merge whatever passes CI</h3><p>It removes the human from work the human is still accountable for. Passing tests prove the code runs. They do not prove it does what the issue asked.</p></div>
-      <div class="card"><h3>A chat summary of each run</h3><p>Prose is something a person has to re-verify. A row that pairs a claim with its proof can be scanned in a second.</p></div>
+      <div class="card"><h3>A chat summary in place of evidence</h3><p>Prose is something a person has to re-verify. A row that pairs a claim with its proof can be scanned in a second. The agent’s own description stays, below the evidence, so it reads as its account and not as proof.</p></div>
       <div class="card"><h3>A saved view on Created</h3><p>The cheapest alternative, and it works today: a filter can sort and group agent pull requests. But it cannot join the issue’s acceptance criteria to the proof, so every result is still read one at a time, and nothing batches the safe ones. It gives up the evidence, which is the point of the concept.</p></div>
     </div>
   </div>
@@ -204,7 +204,7 @@
   </div>
   <a class="shot" href="prototype.html" target="_blank" rel="noopener" aria-label="Open the prototype in a new tab"><img src="assets/prototype-preview.webp" width="1440" height="900" alt="The Agent work tab in Reviews: a sidebar, a risk-ranked list of agent results, and the evidence for the selected result." loading="lazy"></a>
   <div class="tips" style="margin-top:18px">
-    <span><kbd>J</kbd> <kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span>
+    <span><kbd>J</kbd> <kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span><span><kbd>F</kbd> filter</span><span><kbd>Shift</kbd> <kbd>V</kbd> display options</span>
   </div>
   <div class="sec grid3" style="margin-top:28px">
     <div class="card"><h3>Reasons beside every rating</h3><p>Open Why this rating on any result. A score without reasons is a verdict. With reasons it is a starting point you can disagree with.</p></div>
@@ -297,7 +297,7 @@
       <li><span>Open</span>How do we prevent a falsely safe rating from becoming a habit of not reading?</li>
       <li><span>Open</span>Who owns the review when the person who delegated is out?</li>
       <li><span>Open</span>Should agent pull requests still appear under Created, or move to Agent work only?</li>
-      <li><span>Open</span>Where do pull requests started by Loops land in Reviews?</li>
+      <li><span>Open</span>Where do pull requests from Linear’s cloud coding agent and from Loops land in Reviews?</li>
     </ul>
   </div>
 </div></section>
@@ -306,7 +306,7 @@
 <section class="view" id="v-ai" hidden><div class="wrap">
   <p class="eyebrow">AI process</p>
   <h1 class="wide">AI did the volume. I made the calls.</h1>
-  <p class="lede">I used Claude for research, drafting and building. The framing, the cuts and the places where a human has to stay in the loop are my judgment.</p>
+  <p class="lede">I used Claude for research, drafting, building and testing. The framing, the cuts and the places where a human has to stay in the loop are my judgment.</p>
   <div class="sec two-col">
     <div class="card"><h3>Where Claude worked</h3><ul>
       <li>Read Linear's current docs on agents, coding sessions, Triage Intelligence and Priority inbox, so the problem rests on what the product does today.</li>
@@ -314,15 +314,31 @@
       <li>Pressure-tested my problem statement and proposed breakpoints for me to check against my own use.</li>
       <li>Drafted the three directions and sketched each against the same set of sample results.</li>
       <li>Built the clickable prototype from a small data spec, including risk scoring, batching and rules.</li>
+      <li>Turned the prototype into a deployed site on GitHub and Vercel, then split the case study from a full-screen prototype.</li>
+      <li>Built the parts of Reviews the concept sits inside: Created and To review, filter and display menus, a details pane laid out like Linear’s pull request view, and sample data for 14 agent results and 8 pull requests.</li>
+      <li>Ran a review pass against Linear’s docs, aligned the risk labels with Linear’s own scale, and tested every shortcut and focus path in a browser.</li>
+      <li>Did the work for SC-114, a real issue, so the case study’s claims could be checked on a real pull request in Reviews. Linear’s own agent could not run without AI credits.</li>
     </ul></div>
     <div class="card"><h3>Where my judgment shaped it</h3><ul>
       <li>Choosing the product and the experience from my own daily use of agents.</li>
       <li>Deciding the problem is the cost of review, not the quality of the agent.</li>
       <li>Reframing once I saw Reviews in my own workspace: the gap is not a place to review, it is the evidence missing from that place.</li>
-      <li>Cutting auto-merge and chat summaries, because accountability has to stay human.</li>
+      <li>Cutting auto-merge and summaries in place of evidence, because accountability has to stay human.</li>
+      <li>Keeping the agent’s own description, but below the evidence, so it reads as the agent’s account and not as proof.</li>
+      <li>Writing SC-114 with one criterion an agent cannot prove, to see whether Reviews would surface the gap. It didn’t.</li>
+      <li>Approving the theme myself. It is the one criterion only a person can sign off.</li>
       <li>Keeping the primary action manual, with rules opt-in, previewed and reversible.</li>
       <li>Sequencing the rollout so evidence ships before automation.</li>
     </ul></div>
+  </div>
+  <div class="sec">
+    <h2>Where I checked Claude’s work</h2>
+    <ul class="facts">
+      <li><span>Corrected</span>An early claim about how issues link to pull requests came from reading a screenshot. It was replaced with what Linear’s docs say, and the test then confirmed it.</li>
+      <li><span>Hedged</span>“Lands” became “can land” wherever a claim about where pull requests appear wasn’t verified.</li>
+      <li><span>Cut</span>A guess about why Reviews marked the test as quick to review was removed, because the screenshot didn’t support it.</li>
+      <li><span>Caught</span>Visual checks at phone width found that the prototype’s columns don’t stack on small screens. That bug is still open.</li>
+    </ul>
   </div>
 </div></section>
 </main>

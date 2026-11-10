@@ -146,9 +146,10 @@ function risk(i){
   if(i.majorDep){s+=1;r.push({t:'Includes a major version bump',n:true})}
   const g=gaps(i);
   if(g){s+=1;r.push({t:g+(g>1?' acceptance criteria have':' acceptance criterion has')+' no evidence',n:true})}else r.push({t:'Every acceptance criterion has evidence',g:true});
-  return {score:s,level:s>=3?'high':s>=1?'med':'low',reasons:r};
+  return {score:s,level:s>=5?'vhigh':s>=3?'high':s>=1?'typ':'low',reasons:r};
 }
-const LABEL={low:'Low risk',med:'Medium',high:'High',ask:'Question'};
+/* 0 Low, 1-2 Typical, 3-4 High, 5+ Very high: the bands Linear's own Risk score uses */
+const LABEL={low:'Low risk',typ:'Typical risk',high:'High risk',vhigh:'Very high risk',ask:'Question'};
 const groupOf=i=>i.q?'ask':(risk(i).score===0?'safe':'look');
 const GROUPS=[{k:'ask',l:'Agent asked a question'},{k:'look',l:'Needs a look'},{k:'safe',l:'Safe to approve'}];
 
@@ -184,7 +185,7 @@ function visible(){return pend().filter(i=>pass(i))}
 const FILTERS=[
  {k:'source',l:'Source',ic:'loops',opts:()=>[['me','Delegated by me'],['loop','From Loops']],of:i=>i.from},
  {k:'agent',l:'Agent',ic:'agent',opts:()=>[...new Set(ITEMS.map(i=>i.agent))].map(a=>[a,a]),of:i=>i.agent},
- {k:'risk',l:'Risk',ic:'risk',opts:()=>[['ask','Question'],['high','High'],['med','Medium'],['low','Low risk']],of:i=>risk(i).level}];
+ {k:'risk',l:'Risk',ic:'risk',opts:()=>[['ask','Question'],['vhigh','Very high risk'],['high','High risk'],['typ','Typical risk'],['low','Low risk']],of:i=>risk(i).level}];
 const PROPS=[['id','ID'],['agent','Agent'],['lines','Lines changed'],['age','Age'],['risk','Risk']];
 const fLabel=k=>{const F=FILTERS.find(x=>x.k===k),o=F.opts().find(o=>o[0]===S.f[k]);return o?o[1]:S.f[k]};
 const activeF=()=>FILTERS.filter(F=>S.f[F.k]);
@@ -278,10 +279,10 @@ function renderDetail(){
     return done?`<div class="empty"><h3>Queue clear</h3><p>${TOTAL} agent results handled. Each one with its evidence in view.</p><button class="btn pri" data-reset type="button">Replay the demo</button></div>`
       :`<div class="empty"><h3>Select a result</h3><p>Pick one from the list to see its evidence.</p></div>`;
   }
-  const rk=risk(i), ovN=Object.keys(i.ov).filter(k=>i.ov[k]).length;
+  const rk=risk(i), ovN=Object.keys(i.ov).filter(k=>i.ov[k]).length, nFlag=rk.reasons.filter(r=>r.n).length;
   let h=`<div class="dbody"><div class="dh"><span class="crumb"><svg class="ico"><use href="#i-${i.q?'agent':'pr'}"/></svg>Reviews<span>›</span><span class="id">${i.id}</span></span><h3>${esc(i.title)}</h3>
     <div class="m"><span class="who"><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span> · ${esc(i.origin)} · ${i.ago} ago</div></div>`;
-  h+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='high'?'Read this one. Two things need your eyes.':'Check the flagged item, then approve.'}</span></div>
+  h+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='typ'?(nFlag===1?'Check the flagged item, then approve.':`Check the ${nFlag} flagged items, then approve.`):`Read this one. ${nFlag} ${nFlag===1?'thing needs':'things need'} your eyes.`}</span></div>
     <details><summary>Why this rating</summary><ul>${rk.reasons.map(r=>`<li><span class="ic ${r.g?'g':'n'}">${r.g?'✓':'!'}</span>${esc(r.t)}</li>`).join('')}</ul></details></div>`;
   if(i.q){
     h+=`<div class="qcard"><p>${esc(i.q.text)}</p><span style="font-size:13.5px;color:var(--muted)">${esc(i.q.ctx)}</span><div class="opts">${i.q.opts.map((o,k)=>`<button class="btn ${k===1?'pri':''}" type="button" data-act="answer" data-id="${i.id}" data-v="${k}">${esc(o)}</button>`).join('')}</div></div></div>`;
@@ -294,7 +295,7 @@ function renderDetail(){
   h+=`<div class="bar-d">${S.compose?`<textarea id="cmt" placeholder="Tell ${esc(i.agent)} what to change">${esc(S.text)}</textarea>
     <div class="steer"><button type="button" data-act="steer" data-t="Add a test for the missing case.">Add a test for the gap</button><button type="button" data-act="steer" data-t="Split this into smaller pull requests.">Split it up</button><button type="button" data-act="steer" data-t="Explain the assumption before changing it.">Ask why</button></div>`:''}
     <div class="r">${S.compose?`<button class="btn pri" type="button" data-act="send" data-id="${i.id}">Send to ${esc(i.agent)}</button><button class="btn" type="button" data-act="cancel">Cancel</button>`
-      :`<button class="btn pri" type="button" data-act="${ovN?'sendov':'approve'}" data-id="${i.id}">${ovN?`Send ${ovN} override${ovN>1?'s':''}`:'Approve and merge'} <kbd>${ovN?'R':'A'}</kbd></button>
+      :`<button class="btn pri" type="button" data-act="${ovN?'sendov':'approve'}" data-id="${i.id}">${ovN?`Send ${ovN} override${ovN>1?'s':''}`:'Approve and merge'} <kbd>A</kbd></button>
         <button class="btn" type="button" data-act="compose">Request changes <kbd>R</kbd></button><span class="sp"></span><button class="btn" type="button" data-act="takeover" data-id="${i.id}">Take over <kbd>E</kbd></button>`}</div></div>`;
   return h;
 }
@@ -307,17 +308,34 @@ function renderRules(){
       ${risky.length?`<span class="warnl">${risky.map(i=>i.id).join(', ')} ${risky.length>1?'have':'has'} an acceptance criterion with no evidence. Add the evidence rule to keep ${risky.length>1?'them':'it'} in your queue.</span>`:''}</div>
     <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" type="button" data-act="rulesclose">Close</button><button class="btn pri" type="button" data-act="rulessave" ${m.length?'':'disabled'}>Save and approve ${m.length}</button></div></div></div>`;
 }
-function renderAll(){
+/* focus survives re-renders: match the focused control by its data attributes, else the selected row */
+const FOCUS_KEYS=['act','id','key','v','k','check','rule','disp','menu'];
+function focusDesc(){
+  const a=document.activeElement, app=document.getElementById('app');
+  if(!a||a===document.body||!app.contains(a)) return null;
+  if(a.id) return '#'+CSS.escape(a.id);
+  const parts=FOCUS_KEYS.filter(k=>a.dataset[k]!==undefined).map(k=>`[data-${k}="${CSS.escape(a.dataset[k])}"]`);
+  if(a.hasAttribute('data-selall')) parts.push('[data-selall]');
+  return parts.length?parts.join(''):'@row';
+}
+function focusEl(sel){
   const app=document.getElementById('app');
+  let el=sel&&sel!=='@row'?app.querySelector(sel):null;
+  if(!el) el=app.querySelector('.rowwrap.sel .row');
+  if(el){el.focus({preventScroll:true});el.scrollIntoView({block:'nearest'})}
+}
+function renderAll(){
+  const app=document.getElementById('app'), fd=focusDesc(), want=S.focusTo; S.focusTo=null;
   const ls=app.querySelector('.ls'), dt=app.querySelector('.dt'); const sl=ls?ls.scrollTop:0, sd=dt&&dt.dataset.sel===S.sel?dt.scrollTop:0;
   app.innerHTML=`<aside class="sb"><div class="sbn" aria-hidden="true"><div class="tbar"><span class="ib"><svg class="ico"><use href="#i-sidebar"/></svg></span><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-clock"/></svg></span><span class="ib"><svg class="ico"><use href="#i-chevl"/></svg></span><span class="ib dim"><svg class="ico"><use href="#i-chevr"/></svg></span></div><div class="ws"><span class="wsa">AE</span>Acme Eng<svg class="ico chev"><use href="#i-chevd"/></svg><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><svg class="ico tmi"><use href="#i-team"/></svg><span>Engineering<i class="car"></i></span></div><div class="nv sub"><svg class="ico"><use href="#i-home"/></svg><span>Home</span></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="sbh">Try</div><div class="nv"><svg class="ico"><use href="#i-plus"/></svg><span>Invite people</span></div><div class="nv"><svg class="ico"><use href="#i-initiatives"/></svg><span>Initiatives</span></div><div class="nv"><svg class="ico"><use href="#i-cycles"/></svg><span>Cycles</span></div></div><div class="sbf"><div class="keys"><span><kbd>J</kbd><kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span><span><kbd>F</kbd> filter</span></div><div class="acts"><svg class="ico lmark" aria-hidden="true"><use href="#i-linear"/></svg><a class="btn sm" href="index.html#prototype">← Case study</a><button class="btn sm" data-reset type="button">Reset demo</button></div></div></aside>
     <section class="ls" aria-label="Review queue">${renderList()}</section>
     <section class="dt" data-sel="${S.sel}" aria-label="Evidence">${renderDetail()}</section>
     ${S.menu?renderMenu():''}
     ${S.rulesOpen?renderRules():''}
-    ${S.checked.size?`<div class="toast" role="status"><span>${S.checked.size} selected</span><button type="button" data-act="batch">Approve ${S.checked.size}</button></div>`:S.toast?`<div class="toast" role="status"><span>${esc(S.toast)}</span>${S.undo?'<button type="button" data-act="undo">Undo</button>':''}</div>`:''}`;
+    ${S.notice?`<div class="toast" role="status"><span>${esc(S.notice)}</span></div>`:S.checked.size?`<div class="toast" role="status"><span>${S.checked.size} selected</span><button type="button" data-act="batch">Approve ${S.checked.size}</button></div>`:S.toast?`<div class="toast" role="status"><span>${esc(S.toast)}</span>${S.undo?'<button type="button" data-act="undo">Undo</button>':''}</div>`:''}`;
   const l2=app.querySelector('.ls'), d2=app.querySelector('.dt'); if(l2)l2.scrollTop=sl; if(d2)d2.scrollTop=sd;
   placeMenu();
+  if(want) focusEl(want); else if(fd) focusEl(fd);
 }
 function renderMenu(){
   let h='<div class="veil" data-act="menuclose"></div>';
@@ -346,8 +364,21 @@ function placeMenu(){
     const fits=pr.right+4+s.offsetWidth<=ar.right-8;
     s.style.left=(fits?p.offsetWidth+4:-s.offsetWidth-4)+'px'; s.style.top=((mi?mi.offsetTop:0)-6)+'px';}
 }
-function openMenu(m){S.menu=S.menu===m?null:m;S.sub=m==='filter'?'source':null;renderAll()}
-function toast(msg,undo){S.toast=msg;if(!undo)S.undo=null;clearTimeout(S.tt);S.tt=setTimeout(()=>{S.toast=null;S.undo=null;renderAll()},7000)}
+function openMenu(m){
+  if(S.menu===m) return closeMenu();
+  S.menu=m;S.sub=m==='filter'?'source':null;S.focusTo=m==='filter'?'.pop.fm .mi':'#dgrp';renderAll();
+}
+function closeMenu(){const m=S.menu;S.menu=null;S.sub=null;S.focusTo=`[data-menu="${m}"]`;renderAll()}
+function closeRules(){S.rulesOpen=false;S.focusTo='[data-act="rules"]';renderAll()}
+/* Tab stays inside an open menu or the rules dialog */
+function trapTab(e){
+  const box=document.querySelector(S.rulesOpen?'.mbox':'.pop.fm,.pop.dm'); if(!box) return;
+  const f=[...box.querySelectorAll('button:not([disabled]),input,select')]; if(!f.length) return;
+  const i=f.indexOf(document.activeElement);
+  e.preventDefault(); f[(i<0?0:(i+(e.shiftKey?-1:1)+f.length)%f.length)].focus();
+}
+function notice(msg){S.notice=msg;clearTimeout(S.nt);S.nt=setTimeout(()=>{S.notice=null;renderAll()},4000);renderAll()}
+function toast(msg,undo){S.notice=null;clearTimeout(S.nt);S.toast=msg;if(!undo)S.undo=null;clearTimeout(S.tt);S.tt=setTimeout(()=>{S.toast=null;S.undo=null;renderAll()},7000)}
 function apply(ids,st,msg){
   const before=ordered().map(i=>i.id), idx=Math.max(0,before.indexOf(S.sel));
   S.undo={ids:[...ids],prev:ids.map(id=>get(id).st),sel:S.sel};
@@ -371,25 +402,26 @@ function move(d){if(S.tab!=='agent')return prMove(d);const o=ordered();if(!o.len
 const appEl=document.getElementById('app');
 appEl.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]'); if(!t) return;
+  if(S.notice){S.notice=null;clearTimeout(S.nt)}
   const a=t.dataset.act, id=t.dataset.id;
-  if(a==='rulesbg'){if(e.target!==t)return;S.rulesOpen=false;return renderAll()}
+  if(a==='rulesbg'){if(e.target!==t)return;return closeRules()}
   if(a==='tab'){S.tab=t.dataset.v;S.menu=null;S.compose=false;S.checked.clear();renderAll()}
   else if(a==='prselect'){S.prSel[S.tab]=id;renderAll()}
   else if(a==='toagent'){S.tab='agent';S.f=defF();S.sel=id;S.compose=false;renderAll()}
   else if(a==='prdo'){prDo(id,t.dataset.v)}
   else if(a==='select'){S.sel=id;S.compose=false;S.text='';renderAll()}
   else if(a==='menu'){if(S.tab==='agent')openMenu(t.dataset.v)}
-  else if(a==='menuclose'){S.menu=null;S.sub=null;renderAll()}
-  else if(a==='sub'){S.sub=t.dataset.v;renderAll()}
-  else if(a==='setf'){const k=t.dataset.k,v=t.dataset.v;S.f[k]=S.f[k]===v?null:v;S.menu=null;S.sub=null;S.checked.clear();keepSel();renderAll()}
+  else if(a==='menuclose'){closeMenu()}
+  else if(a==='sub'){S.sub=t.dataset.v;S.focusTo=`.pop.sub .mi`;renderAll()}
+  else if(a==='setf'){const k=t.dataset.k,v=t.dataset.v;S.f[k]=S.f[k]===v?null:v;S.menu=null;S.sub=null;S.checked.clear();keepSel();S.focusTo='[data-menu="filter"]';renderAll()}
   else if(a==='unfilter'){const v=t.dataset.v;if(v==='all')S.f=defF();else S.f[v]=null;keepSel();renderAll()}
   else if(a==='resetf'){S.f=defF();S.sub=null;keepSel();renderAll()}
   else if(a==='resetd'){S.d=defD();renderAll()}
   else if(a==='prop'){const v=t.dataset.v;S.d.props[v]=!S.d.props[v];renderAll()}
   else if(a==='approve'){const i=get(id);apply([id],'approved','Approved '+id+'. Merging now.')}
-  else if(a==='compose'){S.compose=true;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}
-  else if(a==='cancel'){S.compose=false;S.text='';renderAll()}
-  else if(a==='steer'){S.text=(S.text?S.text+' ':'')+t.dataset.t;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}
+  else if(a==='compose'){S.compose=true;S.focusTo='#cmt';renderAll()}
+  else if(a==='cancel'){S.compose=false;S.text='';S.focusTo='[data-act="compose"]';renderAll()}
+  else if(a==='steer'){S.text=(S.text?S.text+' ':'')+t.dataset.t;S.focusTo='#cmt';renderAll()}
   else if(a==='send'){const i=get(id);apply([id],'changes','Sent to '+i.agent+'. '+id+' comes back when it finishes.')}
   else if(a==='sendov'){const i=get(id);apply([id],'changes','Sent your overrides to '+i.agent+'. '+id+' comes back when it finishes.')}
   else if(a==='takeover'){const i=get(id);apply([id],'takeover','Opened '+id+' in your editor with the full session context.')}
@@ -400,9 +432,9 @@ appEl.addEventListener('click',e=>{
   else if(a==='undo'&&S.undo&&S.undo.pr){const u=S.undo,p=PRS.find(x=>x.id===u.pr);p.st=u.st;p.status=u.status;S.tab=u.tab;S.prSel[u.tab]=u.pr;S.toast=null;S.undo=null;renderAll()}
   else if(a==='undo'&&S.undo){const u=S.undo;S.tab='agent';u.ids.forEach((x,k)=>{get(x).st=u.prev[k]});S.sel=u.sel;S.toast=null;S.undo=null;renderAll()}
   else if(a==='batch'){const ids=[...S.checked];apply(ids,'approved','Approved '+ids.length+' results. Merging now.')}
-  else if(a==='rules'){S.menu=null;S.rulesOpen=true;renderAll()}
-  else if(a==='rulesclose'){S.rulesOpen=false;renderAll()}
-  else if(a==='rulessave'){const ids=matches().map(i=>i.id);S.rulesOpen=false;apply(ids,'auto','Rules saved. '+ids.length+' result'+(ids.length>1?'s':'')+' approved automatically.')}
+  else if(a==='rules'){S.menu=null;S.rulesOpen=true;S.focusTo='.mbox input';renderAll()}
+  else if(a==='rulesclose'){closeRules()}
+  else if(a==='rulessave'){const ids=matches().map(i=>i.id);S.rulesOpen=false;S.focusTo='[data-act="rules"]';apply(ids,'auto','Rules saved. '+ids.length+' result'+(ids.length>1?'s':'')+' approved automatically.')}
 });
 appEl.addEventListener('change',e=>{
   const t=e.target;
@@ -415,23 +447,47 @@ appEl.addEventListener('input',e=>{if(e.target.id==='cmt')S.text=e.target.value}
 document.addEventListener('click',e=>{if(e.target.closest('[data-reset]')){fresh();renderAll()}});
 document.addEventListener('keydown',e=>{
   if(!inProto()||e.metaKey||e.ctrlKey||e.altKey) return;
-  const tg=e.target; if(tg&&(tg.tagName==='TEXTAREA'||tg.tagName==='INPUT'&&tg.type==='text')){if(e.key==='Escape'){S.compose=false;renderAll()}return}
-  if(S.rulesOpen){if(e.key==='Escape'){S.rulesOpen=false;renderAll()}return}
-  if(S.menu){if(e.key==='Escape'){S.menu=null;S.sub=null;renderAll()}return}
-  if(S.tab!=='agent'){const k=e.key.toLowerCase();
-    if(k==='j'||k==='arrowdown'){e.preventDefault();move(1)}else if(k==='k'||k==='arrowup'){e.preventDefault();move(-1)}
-    else if(k==='a'){const p=prGet(S.prSel[S.tab]);if(p&&!p.agentPR&&(S.tab==='review'||p.status==='ready'))prDo(p.id,S.tab==='review'?'approve':'merge')}
-    return}
+  const tg=e.target; if(tg&&(tg.tagName==='TEXTAREA'||tg.tagName==='INPUT'&&tg.type==='text')){if(e.key==='Escape'&&tg.id==='cmt'){S.compose=false;S.focusTo='[data-act="compose"]';renderAll()}return}
+  if(S.rulesOpen||S.menu){
+    if(e.key==='Escape'){e.preventDefault();return S.rulesOpen?closeRules():closeMenu()}
+    if(e.key==='Tab') trapTab(e);
+    return;
+  }
+  const k=e.key.toLowerCase(), KEYS=['a','r','e','x','f'];
+  if(S.notice&&k!=='shift'){S.notice=null;clearTimeout(S.nt)}
+  if(k==='escape'){if(S.compose){S.compose=false;S.focusTo='[data-act="compose"]';renderAll()}return}
+  /* only act on our shortcuts when focus is not in a control that uses the key itself */
+  if(tg&&tg.tagName==='SELECT') return;
+  if(S.tab!=='agent'){
+    if(k==='j'||k==='arrowdown'){e.preventDefault();return move(1)}
+    if(k==='k'||k==='arrowup'){e.preventDefault();return move(-1)}
+    if(e.key==='V'&&e.shiftKey||KEYS.includes(k)&&!e.shiftKey) e.preventDefault(); else return;
+    const p=prGet(S.prSel[S.tab]);
+    if(k==='f'||e.key==='V') return notice('Filters and display options work in Agent work.');
+    if(!p) return notice('Nothing is selected in this tab.');
+    if(p.agentPR&&(k==='a'||k==='r')) return notice('#'+p.id+' came from a delegated issue. Review it in Agent work, where its evidence is.');
+    if(k==='a'){
+      if(S.tab==='review') return prDo(p.id,'approve');
+      if(p.status==='ready') return prDo(p.id,'merge');
+      return notice('#'+p.id+' can’t merge yet: '+(p.status==='draft'?'it is still a draft.':p.status==='changes'?'changes were requested by '+p.reviewers[0]+'.':'it is waiting on '+p.reviewers.join(', ')+'.'));
+    }
+    if(k==='r'){if(S.tab==='review') return prDo(p.id,'changes');return notice('#'+p.id+' is your own pull request, so there is no one to request changes from.')}
+    return notice(k==='x'?'X selects safe results in Agent work.':'E takes over a result in Agent work.');
+  }
   if(e.key==='f'&&!e.shiftKey){e.preventDefault();return openMenu('filter')}
   if(e.key==='V'&&e.shiftKey){e.preventDefault();return openMenu('display')}
-  const k=e.key.toLowerCase(), i=get(S.sel);
-  if(k==='j'||k==='arrowdown'){e.preventDefault();move(1)}
-  else if(k==='k'||k==='arrowup'){e.preventDefault();move(-1)}
-  else if(!i||i.st!=='pending') return;
-  else if(k==='a'&&!i.q){const n=Object.values(i.ov).some(Boolean);if(!n)apply([i.id],'approved','Approved '+i.id+'. Merging now.')}
-  else if(k==='r'&&!i.q){e.preventDefault();S.compose=true;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}
-  else if(k==='e'&&!i.q){apply([i.id],'takeover','Opened '+i.id+' in your editor with the full session context.')}
-  else if(k==='x'&&groupOf(i)==='safe'){S.checked.has(i.id)?S.checked.delete(i.id):S.checked.add(i.id);renderAll()}
-  else if(k==='escape'){S.compose=false;renderAll()}
+  const i=get(S.sel);
+  if(k==='j'||k==='arrowdown'){e.preventDefault();return move(1)}
+  if(k==='k'||k==='arrowup'){e.preventDefault();return move(-1)}
+  if(!['a','r','e','x'].includes(k)||e.shiftKey) return;
+  e.preventDefault();
+  if(!i||i.st!=='pending') return notice(ordered().length?'Select a result first.':'Nothing left in this view.');
+  if(i.q) return notice(i.id+' is a question. Pick one of the answers first.');
+  if(k==='a'){const ovN=Object.values(i.ov).filter(Boolean).length;
+    return ovN?apply([i.id],'changes','Sent your overrides to '+i.agent+'. '+i.id+' comes back when it finishes.'):apply([i.id],'approved','Approved '+i.id+'. Merging now.')}
+  if(k==='r'){S.compose=true;S.focusTo='#cmt';return renderAll()}
+  if(k==='e') return apply([i.id],'takeover','Opened '+i.id+' in your editor with the full session context.');
+  if(k==='x'){if(groupOf(i)!=='safe') return notice('Only results in Safe to approve can be selected. '+i.id+' is '+LABEL[risk(i).level]+'.');
+    S.checked.has(i.id)?S.checked.delete(i.id):S.checked.add(i.id);return renderAll()}
 });
 fresh(); renderAll();

@@ -30,7 +30,7 @@
 <section class="view" id="v-problem"><div class="wrap">
   <p class="eyebrow">Problem and direction</p>
   <h1 class="wide">Linear now has a place to review agent work. It still can’t show you whether the agent did what you asked.</h1>
-  <p class="lede">Linear lets you hand an issue to an agent and keeps you on the hook for the result. Loops start agents automatically when issues arrive. Reviews brings the resulting pull requests into Linear, but it treats them like any other pull request: a summary, a diff and a merge button. Writing the code is no longer the slow part. Deciding whether to trust what came back is.</p>
+  <p class="lede">Linear lets you hand an issue to an agent and keeps you accountable for the result, and Reviews now brings the pull request into Linear with a risk score and a Guide to what changed. Writing the code is no longer the slow part; deciding whether the agent did what the issue asked is.</p>
 
   <div class="sec">
     <h2>What the product does today</h2>
@@ -39,7 +39,8 @@
       <li><span>Automation</span>Loops can run agent behaviors, coding sessions included, each time an issue arrives in Triage.</li>
       <li><span>Output</span>A coding session works in the cloud and returns a draft pull request, with progress shown in a session on the issue.</li>
       <li><span>Reporting</span>Views filtered by Delegate and Insights by agent-session status describe agent work after it has happened.</li>
-      <li><span>Reviews</span>Pull requests appear in a Reviews view, split into Created and To review and grouped by state, such as Ready to merge. Each one opens to an overview, a diff and a merge button, with a Resolves field in the side panel for linking the issue.</li>
+      <li><span>Reviews</span>Pull requests appear in a Reviews view, split into Created and To review, and can be grouped by status, author, repository, size or priority. Each one opens to an overview, a diff and a merge button. A connected provider can add a Risk score (Low, Typical, High or Very high risk, with optional explanations), and a Guide walks through the pull request as a story.</li>
+      <li><span>Linking</span>An issue links to a pull request through the issue ID in the branch name or title, or a closing keyword. In my workspace, pull requests show no linked issue.</li>
       <li><span>Inbox</span>Priority inbox sorts notifications by source or by a filter you define.</li>
     </ul>
   </div>
@@ -47,18 +48,18 @@
   <div class="sec">
     <h2>Where it breaks</h2>
     <div class="grid2">
-      <div class="card"><span class="n">Generic</span><h3>Reviews is built for pull requests, not delegation</h3><p>Work you handed to an agent lands under Created, next to code you wrote yourself. Nothing marks which pull requests came from a delegation or a Loop, or that they need a different kind of read.</p></div>
-      <div class="card"><span class="n">Flat</span><h3>Grouped by state, not risk</h3><p>A typo fix in the docs and a change to a delivery worker both sit under Ready to merge, sorted by age. Ready to merge says the checks passed. It does not say the work is right.</p></div>
-      <div class="card"><span class="n">Disconnected</span><h3>Intent and outcome never meet</h3><p>The overview shows the agent’s own summary and a list of files. The issue’s acceptance criteria are not on the page, and a pull request can show No issue at all. Nothing shows which parts of the request the agent proved and which it guessed.</p></div>
+      <div class="card"><span class="n">Generic</span><h3>Reviews is built for pull requests, not delegation</h3><p>A pull request an agent opens can sit under Created beside the code you wrote yourself, with nothing marking it as delegated work, or that it needs a different kind of read.</p></div>
+      <div class="card"><span class="n">Flat</span><h3>Risk is a label, not a way to work</h3><p>Reviews can group by status and size and show a provider-supplied risk score, but nothing ranks a queue by what needs a human or batches the safe results.</p></div>
+      <div class="card"><span class="n">Disconnected</span><h3>Intent and outcome never meet</h3><p>The overview shows the agent’s own summary and a list of files. The issue’s acceptance criteria are not on the page, and a pull request can show No issue at all. Guides explain what changed and why, not whether the issue’s acceptance criteria were met. Nothing shows which parts of the request the agent proved and which it guessed.</p></div>
       <div class="card"><span class="n">Unscaled</span><h3>Every Loop multiplies the pile</h3><p>Reviewing results one at a time turns the human into the bottleneck, or into a rubber stamp. Both waste the agent.</p></div>
     </div>
-    <p class="note">These four come from how I use agents in my own workspace. The first three are visible in the Reviews view today.</p>
+    <p class="note">These four come from my own workspace, checked against Linear’s docs on Nov 10, 2026. The first three are visible today. Where pull requests from Linear’s cloud coding agent and from Loops land is still to confirm. This is one workspace and one user, so I would test it with five reviewers, measuring time to decision.</p>
   </div>
 
   <div class="sec">
     <h2>The path to a decision</h2>
     <p class="plabel">Today</p>
-    <div class="path"><span class="st">Open Reviews</span><span class="ar">→</span><span class="st">Pick a pull request by age</span><span class="ar">→</span><span class="st">Read the agent’s summary</span><span class="ar">→</span><span class="st">Open the issue to recall what you asked</span><span class="ar">→</span><span class="st">Read the diff for proof</span><span class="ar">→</span><span class="st">Merge or comment</span></div>
+    <div class="path"><span class="st">Open Reviews</span><span class="ar">→</span><span class="st">Pick a pull request</span><span class="ar">→</span><span class="st">Read the agent’s summary</span><span class="ar">→</span><span class="st">Open the issue to recall what you asked</span><span class="ar">→</span><span class="st">Read the diff for proof</span><span class="ar">→</span><span class="st">Merge or comment</span></div>
     <p class="plabel">Proposed</p>
     <div class="path good"><span class="st">Open Reviews, Agent work</span><span class="ar">→</span><span class="st">Read the evidence</span><span class="ar">→</span><span class="st">Decide</span></div>
   </div>
@@ -73,7 +74,7 @@
     <div class="grid2">
       <div class="card"><h3>Judgment goes where the evidence is</h3><p>Show the request and the proof for it side by side, in one place.</p></div>
       <div class="card"><h3>Rank by risk, not recency</h3><p>Start with what needs a human. Batch what does not.</p></div>
-      <div class="card"><h3>No is as cheap as yes</h3><p>Requesting changes or taking over is one key away, never a trip to another tool.</p></div>
+      <div class="card"><h3>Saying no costs the same as saying yes</h3><p>Requesting changes or taking over is one key away, never a trip to another tool.</p></div>
       <div class="card"><h3>Trust is a dial</h3><p>People set rules for what approves itself, preview what a rule would have done, and reverse it.</p></div>
     </div>
   </div>
@@ -85,6 +86,7 @@
       <li><span>Coverage</span>Share of agent results reviewed within one working day.</li>
       <li><span>Quality</span>Rework rate: results that came back with requested changes.</li>
       <li><span>Trust</span>Share approved by rule, and how often those are later reverted.</li>
+      <li><span>Counter</span>Approvals made without opening the evidence, and approvals later reverted.</li>
     </ul>
   </div>
 
@@ -95,6 +97,9 @@
       <li><a href="https://linear.app/docs/coding-sessions" target="_blank" rel="noopener">Coding sessions</a></li>
       <li><a href="https://linear.app/docs/triage" target="_blank" rel="noopener">Triage</a> and <a href="https://linear.app/docs/triage-intelligence" target="_blank" rel="noopener">Triage Intelligence</a></li>
       <li><a href="https://linear.app/changelog/2026-09-03-priority-inbox" target="_blank" rel="noopener">Priority inbox changelog</a></li>
+      <li><a href="https://linear.app/docs/diffs" target="_blank" rel="noopener">Diffs and reviews</a> (Risk score and Guides)</li>
+      <li><a href="https://linear.app/docs/linear-cloud-coding-agent" target="_blank" rel="noopener">Linear cloud coding agent</a></li>
+      <li><a href="https://linear.app/docs/loops" target="_blank" rel="noopener">Loops</a></li>
     </ul>
   </div>
 </div></section>
@@ -145,7 +150,7 @@
   <div class="sec">
     <h2>Scoring against the problem</h2>
     <div class="scroll"><table class="tbl">
-      <thead><tr><th>Criterion</th><th>A. Inbox</th><th>B. Issue tab</th><th>C. Queue</th></tr></thead>
+      <thead><tr><th>Criterion</th><th>A. Smarter inbox</th><th>B. Evidence on the pull request</th><th>C. Agent work in Reviews</th></tr></thead>
       <tbody>
         <tr><td>Speed to a decision</td><td class="dots" aria-label="3 of 4">●●●○</td><td class="dots" aria-label="2 of 4">●●○○</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
         <tr><td>Holds up when Loops multiply results</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
@@ -161,6 +166,7 @@
     <div class="grid2">
       <div class="card"><h3>Auto-merge whatever passes CI</h3><p>It removes the human from work the human is still accountable for. Passing tests prove the code runs. They do not prove it does what the issue asked.</p></div>
       <div class="card"><h3>A chat summary of each run</h3><p>Prose is something a person has to re-verify. A row that pairs a claim with its proof can be scanned in a second.</p></div>
+      <div class="card"><h3>A saved view on Created</h3><p>The cheapest alternative, and it works today: a filter can sort and group agent pull requests. But it cannot join the issue’s acceptance criteria to the proof, so every result is still read one at a time, and nothing batches the safe ones. It gives up the evidence, which is the point of the concept.</p></div>
     </div>
   </div>
 
@@ -174,7 +180,7 @@
 <section class="view" id="v-prototype" hidden><div class="wrap">
   <p class="eyebrow">Build the experience</p>
   <h1 class="wide">Fourteen agent results. Clear the queue.</h1>
-  <p class="lede">The Agent work tab in Reviews, as a working prototype with sample data. Risk, grouping, batching and rules are computed from the data, so the behavior is real. Created and To review hold ordinary pull requests for comparison, including three that agents opened on issues you delegated.</p>
+  <p class="lede">The Agent work tab in Reviews, as a working prototype with sample data. Risk, grouping, batching and rules are computed from the data, so the behavior is real. Created and To review show Reviews as it works today, plus two additions from this concept: a Delegated chip and a link from agent pull requests into Agent work.</p>
   <div class="launch">
     <a class="btn pri lg" href="prototype.html" target="_blank" rel="noopener">Open the prototype <span aria-hidden="true">↗</span></a>
     <span class="note" style="margin:0">Opens full screen in a new tab. Best on a laptop or larger screen.</span>
@@ -201,8 +207,8 @@
     <div class="grid3">
       <div class="card"><h3>Evidence row</h3><p>One claim, its proof, its status. Used by Agent work, any pull request in Reviews, and Triage Intelligence suggestions.</p>
         <ul class="crit mini" style="margin-top:12px"><li><span class="ic g">✓</span><div><div class="q">Covered by a new test</div><div class="e">digest.spec.ts line 42</div></div></li><li class="gap"><span class="ic n">!</span><div><div class="q">Works with no timezone set</div><div class="e">No evidence found</div></div></li></ul></div>
-      <div class="card"><h3>Risk pill with reasons</h3><p>Never shown without the why. Rules, Insights and notifications can all read the same rating.</p>
-        <div class="mini"><span class="pill low" style="width:max-content">Low risk</span><span class="pill med" style="width:max-content">Medium</span><span class="pill high" style="width:max-content">High</span></div></div>
+      <div class="card"><h3>Risk pill with reasons</h3><p>Reads the risk score Reviews already gets from a connected provider, adds whether every acceptance criterion has evidence, and is never shown without the why.</p>
+        <div class="mini"><span class="pill low" style="width:max-content">Low risk</span><span class="pill typ" style="width:max-content">Typical risk</span><span class="pill high" style="width:max-content">High risk</span><span class="pill vhigh" style="width:max-content">Very high risk</span></div></div>
       <div class="card"><h3>Assumption chip</h3><p>Anything the agent decided on its own, with keep and override. Turns hidden choices into visible ones.</p>
         <ul class="assume mini" style="margin-top:12px"><li><span>Used the saved timezone</span><span class="bt"><button aria-pressed="true">Keep</button><button aria-pressed="false">Override</button></span></li></ul></div>
       <div class="card"><h3>Agent attribution</h3><p>Who did it, who delegated it, which Loop started it. The same line everywhere an agent appears.</p>
@@ -210,7 +216,31 @@
       <div class="card"><h3>Decision bar</h3><p>One primary action, one way to steer, one way out. Learn it once, use it in every review.</p>
         <div class="mini" style="display:flex;gap:8px;flex-wrap:wrap"><span class="btn pri sm">Approve</span><span class="btn sm">Request changes</span><span class="btn sm">Take over</span></div></div>
     </div>
-    <p class="note">Each part lands in three places: the Agent work tab, the pull request overview and the inbox row. A change to one improves all three.</p>
+    <p class="note">Each part appears in three places: the Agent work tab, the pull request overview and the inbox row. A change to one improves all three.</p>
+  </div>
+
+  <div class="sec">
+    <h2>How the rating is computed</h2>
+    <p>Agent work reads the risk score Reviews already gets from a connected provider and adds one signal of its own: whether every acceptance criterion has evidence. The prototype stands in for both with the signals below.</p>
+    <div class="grid2" style="margin-top:14px">
+      <div class="scroll"><table class="tbl" style="min-width:0">
+        <thead><tr><th>Signal</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td>CI is failing</td><td>3</td></tr>
+          <tr><td>Touches a sensitive path</td><td>2</td></tr>
+          <tr><td>Includes a major version bump</td><td>1</td></tr>
+          <tr><td>Any acceptance criterion without evidence</td><td>1</td></tr>
+        </tbody></table></div>
+      <div class="scroll"><table class="tbl" style="min-width:0">
+        <thead><tr><th>Total</th><th>Rating</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td><span class="pill low">Low risk</span></td></tr>
+          <tr><td>1 to 2</td><td><span class="pill typ">Typical risk</span></td></tr>
+          <tr><td>3 to 4</td><td><span class="pill high">High risk</span></td></tr>
+          <tr><td>5 or more</td><td><span class="pill vhigh">Very high risk</span></td></tr>
+        </tbody></table></div>
+    </div>
+    <p class="note">The weights are illustrative. They would be tuned on revert and rework data.</p>
   </div>
 
   <div class="sec">
@@ -222,7 +252,7 @@
         <li><b>Rank by risk, not recency.</b> Attention is the scarce resource.</li>
       </ul></div>
       <div class="card"><ul>
-        <li><b>No costs the same as yes.</b> Disagreement is a normal path, not an escape hatch.</li>
+        <li><b>Saying no costs the same as saying yes.</b> Disagreement is a normal path, not an escape hatch.</li>
         <li><b>Trust is a dial.</b> Automation is opt-in, previewed and reversible.</li>
         <li><b>Explain every score.</b> A rating without reasons will be ignored.</li>
       </ul></div>
@@ -250,6 +280,7 @@
       <li><span>Open</span>How do we prevent a falsely safe rating from becoming a habit of not reading?</li>
       <li><span>Open</span>Who owns the review when the person who delegated is out?</li>
       <li><span>Open</span>Should agent pull requests still appear under Created, or move to Agent work only?</li>
+      <li><span>Open</span>Where do pull requests started by Loops land in Reviews?</li>
     </ul>
   </div>
 </div></section>

@@ -43,19 +43,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
 .view{padding-block:36px 72px}
 .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
-h1{font-size:clamp(26px,4.2vw,42px);line-height:1.12;letter-spacing:-.02em;font-weight:650;max-width:22ch;text-wrap:balance}
-h1.wide{max-width:26ch}
+h1{font-size:clamp(26px,4.2vw,42px);line-height:1.12;letter-spacing:-.02em;font-weight:650;max-width:none;text-wrap:pretty}
+h1.wide{max-width:none}
 h2{font-size:22px;letter-spacing:-.01em;font-weight:620;margin-bottom:14px;text-wrap:balance}
 h3{font-size:16px;font-weight:600;margin-bottom:6px}
-.lede{font-size:18px;color:var(--muted);max-width:62ch;margin-top:18px;line-height:1.55}
+.lede{font-size:18px;color:var(--muted);max-width:none;margin-top:18px;line-height:1.55}
 .sec{margin-top:52px}
-.sec>p{max-width:66ch;color:var(--muted)}
+.sec>p{max-width:none;color:var(--muted)}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
 .card p{color:var(--muted);font-size:14.5px}
 .card .n{font-family:var(--mono);font-size:12px;color:var(--accent);margin-bottom:8px;display:block}
-.facts li{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);color:var(--fg);max-width:70ch}
+.facts li{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);color:var(--fg);max-width:none}
 .facts li:last-child{border-bottom:1px solid var(--line)}
 .facts li span{font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;padding-top:3px;min-width:84px}
 .path{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
@@ -63,7 +63,7 @@ h3{font-size:16px;font-weight:600;margin-bottom:6px}
 .path .ar{color:var(--muted)}
 .path.good .st{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:500}
 .plabel{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:18px}
-.note{font-size:13px;color:var(--muted);margin-top:10px;max-width:70ch}
+.note{font-size:13px;color:var(--muted);margin-top:10px;max-width:none}
 .src{margin-top:40px;font-size:13px;color:var(--muted)}
 .src li{padding:2px 0;overflow-wrap:anywhere}
 /* explorations */

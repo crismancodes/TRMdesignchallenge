@@ -82,9 +82,12 @@ const matches=()=>ITEMS.filter(i=>i.st==='pending'&&!i.q&&RULES.every(r=>!S.rule
 
 /* ---------- state ---------- */
 let S;
+const defF=()=>({source:null,agent:null,risk:null});
+const defD=()=>({group:'risk',props:{id:true,agent:true,lines:true,age:true,risk:true}});
+const isDefD=()=>JSON.stringify(S.d)===JSON.stringify(defD());
 function fresh(){
   ITEMS.forEach(i=>{i.st='pending';i.ov={}});
-  S={sel:null,checked:new Set(),f:{source:null,agent:null,risk:null},d:{group:'risk',props:{id:true,agent:true,lines:true,age:true,risk:true}},menu:null,sub:null,compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
+  S={sel:null,checked:new Set(),f:defF(),d:defD(),menu:null,sub:null,compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
      rules:{tests:true,docs:true,small:false,deps:false,sens:false,evid:false}};
   S.sel=(ordered()[0]||{}).id||null;
 }
@@ -186,7 +189,8 @@ function renderAll(){
 function renderMenu(){
   let h='<div class="veil" data-act="menuclose"></div>';
   if(S.menu==='filter'){
-    h+=`<div class="pop fm" role="menu" aria-label="Add filter"><div class="ph"><span>Add Filter…</span><kbd>F</kbd></div><div class="pl">${FILTERS.map(F=>`<button type="button" role="menuitem" class="mi${S.sub===F.k?' on':''}" data-act="sub" data-v="${F.k}" aria-haspopup="true" aria-expanded="${S.sub===F.k}"><svg class="ico"><use href="#i-${F.ic}"/></svg><span>${F.l}</span>${S.f[F.k]?'<em class="dot"></em>':''}<svg class="ico car"><use href="#i-caret"/></svg></button>`).join('')}</div>`;
+    h+=`<div class="pop fm" role="menu" aria-label="Add filter"><div class="ph"><span>Add Filter…</span><kbd>F</kbd></div><div class="pl">${FILTERS.map(F=>`<button type="button" role="menuitem" class="mi${S.sub===F.k?' on':''}" data-act="sub" data-v="${F.k}" aria-haspopup="true" aria-expanded="${S.sub===F.k}"><svg class="ico"><use href="#i-${F.ic}"/></svg><span>${F.l}</span>${S.f[F.k]?'<em class="dot"></em>':''}<svg class="ico car"><use href="#i-caret"/></svg></button>`).join('')}</div>
+      <div class="pf"><button type="button" class="rst" data-act="resetf" ${activeF().length?'':'disabled'}><svg class="ico"><use href="#i-reset"/></svg>Reset filters</button></div>`;
     const F=FILTERS.find(x=>x.k===S.sub);
     if(F){const base=pend().filter(i=>pass(i,F.k));
       h+=`<div class="pop sub" role="menu" aria-label="${F.l}">${F.opts().map(([v,l])=>{const n=base.filter(i=>F.of(i)===v).length;return `<button type="button" role="menuitemradio" aria-checked="${S.f[F.k]===v}" class="mi" data-act="setf" data-k="${F.k}" data-v="${esc(v)}"><span class="ck">${S.f[F.k]===v?'<svg class="ico"><use href="#i-check"/></svg>':''}</span><span>${esc(l)}</span><em>${n}</em></button>`}).join('')}</div>`}
@@ -194,7 +198,8 @@ function renderMenu(){
   } else {
     h+=`<div class="pop dm" role="dialog" aria-label="Display options"><div class="dr"><label for="dgrp">Grouping</label><select id="dgrp" data-disp="group"><option value="risk"${S.d.group==='risk'?' selected':''}>Risk</option><option value="none"${S.d.group==='none'?' selected':''}>No grouping</option></select></div>
       <div class="dr"><span>Ordering</span><span class="fixed">Risk, then age</span></div>
-      <div class="dsep"></div><div class="dlab">Display properties</div><div class="props">${PROPS.map(([k,l])=>`<button type="button" class="prop" data-act="prop" data-v="${k}" aria-pressed="${S.d.props[k]}">${l}</button>`).join('')}</div></div>`;
+      <div class="dsep"></div><div class="dlab">Display properties</div><div class="props">${PROPS.map(([k,l])=>`<button type="button" class="prop" data-act="prop" data-v="${k}" aria-pressed="${S.d.props[k]}">${l}</button>`).join('')}</div>
+      <div class="dsep"></div><div class="dfoot"><button type="button" class="rst" data-act="resetd" ${isDefD()?'disabled':''}><svg class="ico"><use href="#i-reset"/></svg>Reset to default</button></div></div>`;
   }
   return h;
 }
@@ -231,7 +236,9 @@ appEl.addEventListener('click',e=>{
   else if(a==='menuclose'){S.menu=null;S.sub=null;renderAll()}
   else if(a==='sub'){S.sub=t.dataset.v;renderAll()}
   else if(a==='setf'){const k=t.dataset.k,v=t.dataset.v;S.f[k]=S.f[k]===v?null:v;S.menu=null;S.sub=null;S.checked.clear();keepSel();renderAll()}
-  else if(a==='unfilter'){const v=t.dataset.v;if(v==='all')S.f={source:null,agent:null,risk:null};else S.f[v]=null;keepSel();renderAll()}
+  else if(a==='unfilter'){const v=t.dataset.v;if(v==='all')S.f=defF();else S.f[v]=null;keepSel();renderAll()}
+  else if(a==='resetf'){S.f=defF();S.sub=null;keepSel();renderAll()}
+  else if(a==='resetd'){S.d=defD();renderAll()}
   else if(a==='prop'){const v=t.dataset.v;S.d.props[v]=!S.d.props[v];renderAll()}
   else if(a==='approve'){const i=get(id);apply([id],'approved','Approved '+id+'. Merging now.')}
   else if(a==='compose'){S.compose=true;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}

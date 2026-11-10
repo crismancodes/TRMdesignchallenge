@@ -358,3 +358,12 @@ html.full body{overflow:hidden;font-size:13px}
 .props{display:flex;flex-wrap:wrap;gap:6px}
 .prop{border:1px solid #2e2e32;background:transparent;color:var(--muted);border-radius:999px;padding:3px 11px;font-size:12.5px}
 .prop[aria-pressed="true"]{background:var(--chip);border-color:transparent;color:var(--fg)}
+
+/* reset actions in the filter and display menus */
+.pf{border-top:1px solid #2a2a2d;padding:5px}
+.rst{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;border-radius:6px;padding:6px 8px;color:var(--fg-2);font-size:13px;text-align:left}
+.rst .ico{width:14px;height:14px;color:var(--muted)}
+.rst:hover:not([disabled]){background:var(--chip);color:var(--fg)}
+.rst[disabled]{color:var(--faint);cursor:default}
+.rst[disabled] .ico{color:var(--faint)}
+.dfoot{margin:-4px -8px -6px}

@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Agent Review Queue: a design exercise and working prototype for reviewing AI agent results by risk.">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Agent Review Queue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: a case-study shell with five tabs. The Prototype tab holds a three-pane work surface (nav, queue, evidence) that behaves like the product. */
+:root{
+  --bg:#F4F5F8; --surface:#FFFFFF; --surface-2:#ECEEF3; --line:#DADDE6; --fg:#12151C; --muted:#586070;
+  --accent:#2F4FD6; --accent-soft:#E4E9FC; --on-accent:#FFFFFF;
+  --ok:#0F7A49; --ok-soft:#DFF3E8; --warn:#8F5600; --warn-soft:#FAEBCB; --risk:#B0251D; --risk-soft:#FADFDC;
+  --add:#0F7A49; --add-bg:#E6F5EC; --del:#B0251D; --del-bg:#FBE9E7;
+  --font:'Geist',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D0F14; --surface:#151821; --surface-2:#1C202B; --line:#2A2F3D; --fg:#E7E9EF; --muted:#9AA2B4;
+  --accent:#8199FF; --accent-soft:#1E264F; --on-accent:#0D0F14;
+  --ok:#4DC48B; --ok-soft:#12291F; --warn:#E8A93F; --warn-soft:#2C2310; --risk:#F2786F; --risk-soft:#331816;
+  --add:#4DC48B; --add-bg:#10261C; --del:#F2786F; --del-bg:#2E1715; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D0F14; --surface:#151821; --surface-2:#1C202B; --line:#2A2F3D; --fg:#E7E9EF; --muted:#9AA2B4;
+  --accent:#8199FF; --accent-soft:#1E264F; --on-accent:#0D0F14;
+  --ok:#4DC48B; --ok-soft:#12291F; --warn:#E8A93F; --warn-soft:#2C2310; --risk:#F2786F; --risk-soft:#331816;
+  --add:#4DC48B; --add-bg:#10261C; --del:#F2786F; --del-bg:#2E1715; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+h1,h2,h3,h4,p,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topin{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center;flex:none}
+.mark::after{content:"";width:10px;height:10px;border:2px solid var(--on-accent);border-radius:3px}
+.brand b{display:block;font-weight:600;line-height:1.2}
+.brand small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.tabs{display:flex;gap:2px;overflow-x:auto;max-width:100%}
+.tabs a{padding:7px 12px;border-radius:8px;text-decoration:none;color:var(--muted);font-weight:500;white-space:nowrap;font-size:14px}
+.tabs a:hover{background:var(--surface-2);color:var(--fg)}
+.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+.view{padding-block:36px 72px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+h1{font-size:clamp(26px,4.2vw,42px);line-height:1.12;letter-spacing:-.02em;font-weight:650;max-width:22ch;text-wrap:balance}
+h1.wide{max-width:26ch}
+h2{font-size:22px;letter-spacing:-.01em;font-weight:620;margin-bottom:14px;text-wrap:balance}
+h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.lede{font-size:18px;color:var(--muted);max-width:62ch;margin-top:18px;line-height:1.55}
+.sec{margin-top:52px}
+.sec>p{max-width:66ch;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.card p{color:var(--muted);font-size:14.5px}
+.card .n{font-family:var(--mono);font-size:12px;color:var(--accent);margin-bottom:8px;display:block}
+.facts li{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);color:var(--fg);max-width:70ch}
+.facts li:last-child{border-bottom:1px solid var(--line)}
+.facts li span{font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;padding-top:3px;min-width:84px}
+.path{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.path .st{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:13px}
+.path .ar{color:var(--muted)}
+.path.good .st{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:500}
+.plabel{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:18px}
+.note{font-size:13px;color:var(--muted);margin-top:10px;max-width:70ch}
+.src{margin-top:40px;font-size:13px;color:var(--muted)}
+.src li{padding:2px 0;overflow-wrap:anywhere}
+/* explorations */
+.wf{background:var(--surface-2);border-radius:8px;padding:10px;display:grid;gap:7px;margin-bottom:14px;min-height:120px;align-content:start}
+.wf .row{display:flex;align-items:center;gap:7px}
+.bar{height:7px;border-radius:4px;background:var(--line);flex:1}
+.bar.s{flex:none;width:34px}.bar.a{background:var(--accent);opacity:.8}
+.dotw{width:9px;height:9px;border-radius:50%;background:var(--muted);opacity:.5;flex:none}
+.btnw{width:26px;height:12px;border-radius:4px;border:1px solid var(--accent);flex:none}
+.wf .tabsw{display:flex;gap:6px}.wf .tabsw i{height:9px;width:44px;border-radius:4px;background:var(--line)}.wf .tabsw i.on{background:var(--accent)}
+.wf.two{grid-template-columns:.8fr 1.2fr;gap:10px}.wf.two>div{display:grid;gap:7px;align-content:start}
+.wf .box{border:1px dashed var(--line);border-radius:6px;padding:7px;display:grid;gap:6px}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.chip.win{background:var(--accent-soft);color:var(--accent)}
+.tag{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-top:12px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.card ul.t{margin-top:4px}.card ul.t li{font-size:14px;color:var(--muted);padding:2px 0 2px 14px;position:relative}
+.card ul.t li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:2px;background:var(--muted)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-weight:600;color:var(--muted);font-size:13px}
+.tbl td.dots{font-family:var(--mono);letter-spacing:.1em;white-space:nowrap}
+.tbl td.c{color:var(--accent);font-weight:600}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+/* prototype frame */
+.tips{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:14px;color:var(--muted);font-size:14px}
+kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;background:var(--surface);color:var(--fg)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:var(--surface-2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.btn.pri:hover{filter:brightness(1.08)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:default}
+.app{position:relative;display:grid;grid-template-columns:200px minmax(300px,380px) minmax(0,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface);height:min(760px,calc(100vh - 150px));min-height:560px}
+.sb{background:var(--surface-2);border-right:1px solid var(--line);padding:12px 10px;display:flex;flex-direction:column;gap:2px;font-size:14px;overflow:auto}
+.ws{display:flex;align-items:center;gap:8px;font-weight:600;padding:6px 8px 12px}
+.ws i{width:20px;height:20px;border-radius:5px;background:var(--muted);display:block;opacity:.7}
+.nv{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;color:var(--muted)}
+.nv.on{background:var(--surface);color:var(--fg);font-weight:600;box-shadow:0 0 0 1px var(--line)}
+.nv em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--accent)}
+.sbh{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:14px 8px 4px}
+.ls{border-right:1px solid var(--line);overflow:auto;display:flex;flex-direction:column;min-width:0}
+.lh{position:sticky;top:0;background:var(--surface);z-index:2;padding:12px 14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.lh .r{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.lh b{font-size:15px}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:2px 10px;font-size:12.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);border-color:transparent;color:var(--accent);font-weight:600}
+.gh{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px 6px;font-size:12px;font-weight:600;color:var(--muted);font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.gh label{display:flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font-family:var(--font);font-weight:500}
+.rowwrap{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.rowwrap.sel{background:var(--accent-soft)}
+.rowwrap input{margin:0 0 0 14px;align-self:center;accent-color:var(--accent);width:16px;height:16px}
+.row{flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:10px 14px;display:grid;gap:3px}
+.row .t{font-weight:550;line-height:1.35;overflow-wrap:anywhere}
+.row .m{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;color:var(--muted);font-size:12.5px}
+.row .id{font-family:var(--mono);font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.low{background:var(--ok-soft);color:var(--ok)}.pill.med{background:var(--warn-soft);color:var(--warn)}
+.pill.high{background:var(--risk-soft);color:var(--risk)}.pill.ask{background:var(--accent-soft);color:var(--accent)}
+.av{width:16px;height:16px;border-radius:50%;background:var(--muted);color:var(--surface);display:inline-grid;place-items:center;font-size:10px;font-weight:700;vertical-align:-3px;margin-right:5px}
+.da{color:var(--add)}.dd{color:var(--del)}
+.dt{overflow:auto;display:flex;flex-direction:column;min-width:0;position:relative}
+.dbody{padding:20px 22px;display:grid;gap:22px;flex:1;align-content:start}
+.dh .id{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.dh h3{font-size:20px;line-height:1.25;margin:4px 0 6px;letter-spacing:-.01em}
+.dh .m{color:var(--muted);font-size:13.5px}
+.rk{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:8px}
+.rk .l{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rk details summary{cursor:pointer;color:var(--accent);font-size:13.5px;font-weight:500}
+.rk ul{margin-top:8px;display:grid;gap:5px}
+.rk li{font-size:13.5px;display:flex;gap:8px;color:var(--muted)}
+.ic{width:16px;height:16px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px;font-weight:700;flex:none;margin-top:3px}
+.ic.g{background:var(--ok-soft);color:var(--ok)}.ic.n{background:var(--warn-soft);color:var(--warn)}
+.sh{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+.crit{display:grid;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.crit li{display:grid;grid-template-columns:20px 1fr;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.crit li:last-child{border-bottom:0}
+.crit .q{font-weight:550;font-size:14px}.crit .e{font-size:13px;color:var(--muted);margin-top:1px}
+.crit li.gap{background:var(--warn-soft)}.crit li.gap .e{color:var(--warn)}
+.assume li{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:14px}
+.assume li.ov{border-color:var(--accent);background:var(--accent-soft)}
+.assume .bt{display:flex;gap:4px;flex:none}
+.assume .bt button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:2px 8px;font-size:12.5px}
+.assume .bt button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.files li{border:1px solid var(--line);border-radius:8px;margin-bottom:6px;overflow:hidden}
+.files .fr{display:flex;justify-content:space-between;gap:10px;padding:7px 12px;font-family:var(--mono);font-size:12.5px;align-items:center}
+.files .fr button{border:0;background:none;color:var(--accent);font-size:12.5px;font-family:var(--font)}
+.diff{margin:0;padding:8px 0;border-top:1px solid var(--line);font-family:var(--mono);font-size:12.5px;overflow-x:auto;background:var(--surface-2)}
+.diff div{padding:0 12px;white-space:pre}
+.diff .a{background:var(--add-bg);color:var(--add)}.diff .d{background:var(--del-bg);color:var(--del)}
+.chk{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.chk b{color:var(--ok);font-weight:600}
+.qcard{border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--r);padding:14px;display:grid;gap:10px}
+.qcard p{font-weight:550}
+.qcard .opts{display:flex;gap:8px;flex-wrap:wrap}
+.bar-d{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:12px 22px;display:grid;gap:10px}
+.bar-d .r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar-d .sp{flex:1}
+.bar-d textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);color:var(--fg);min-height:66px;resize:vertical}
+.steer{display:flex;gap:6px;flex-wrap:wrap}
+.steer button{border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:12.5px;padding:2px 10px}
+.empty{display:grid;place-items:center;text-align:center;flex:1;padding:40px;color:var(--muted);gap:10px;align-content:center}
+.empty h3{color:var(--fg);font-size:20px}
+.toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--fg);color:var(--bg);border-radius:9px;padding:9px 12px 9px 14px;display:flex;gap:14px;align-items:center;font-size:13.5px;z-index:6;max-width:calc(100% - 24px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.toast button{background:none;border:0;color:var(--bg);text-decoration:underline;font-weight:600}
+.modal{position:absolute;inset:0;background:rgba(10,12,18,.5);display:grid;place-items:center;z-index:5;padding:14px}
+.mbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;width:min(520px,100%);max-height:100%;overflow:auto;display:grid;gap:14px}
+.mbox h3{font-size:18px;margin:0}
+.mbox p{color:var(--muted);font-size:14px}
+.rule{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.rule input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px}
+.rule small{display:block;color:var(--muted);font-size:12.5px}
+.prev{background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:13.5px;display:grid;gap:6px}
+.prev .ids{display:flex;gap:6px;flex-wrap:wrap}
+.prev .ids span{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+.prev .warnl{color:var(--warn)}
+.legend{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.mini{display:grid;gap:8px;margin-top:12px}
+.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.two-col .card li{padding:7px 0;border-top:1px solid var(--line);font-size:14.5px}
+.two-col .card li:first-child{border-top:0}
+.phase{display:grid;gap:4px}
+.phase b{font-size:14px}
+.phase span{font-size:13.5px;color:var(--muted)}
+@media (max-width:980px){
+  .app{grid-template-columns:minmax(0,1fr);height:auto;min-height:0}
+  .sb{display:none}
+  .ls{max-height:420px;border-right:0;border-bottom:1px solid var(--line)}
+  .dt{min-height:460px}
+}
+@media (prefers-reduced-motion:no-preference){.rowwrap{transition:background .12s}.toast{animation:up .18s ease-out}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap topin">
+    <div class="brand"><span class="mark" aria-hidden="true"></span><div><b>Agent Review Queue</b><small>Senior Designer exercise by Sean Crisman. Unofficial concept for Linear.</small></div></div>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <a href="#problem">Problem</a><a href="#explore">Explorations</a><a href="#prototype">Prototype</a><a href="#leverage">Leverage</a><a href="#ai">AI process</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- PROBLEM -->
+<section class="view" id="v-problem"><div class="wrap">
+  <p class="eyebrow">Problem and direction</p>
+  <h1 class="wide">You are accountable for work you did not do, and Linear gives you no good place to check it.</h1>
+  <p class="lede">Linear lets you hand an issue to an agent and keeps you on the hook for the result. Loops go further and start agents automatically when issues arrive. Writing the code is no longer the slow part. Deciding whether to trust what came back is.</p>
+
+  <div class="sec">
+    <h2>What the product does today</h2>
+    <ul class="facts">
+      <li><span>Delegation</span>Assigning an issue to an agent triggers delegation. The agent acts, and the human teammate stays responsible for the outcome.</li>
+      <li><span>Automation</span>Loops can run agent behaviors, coding sessions included, each time an issue arrives in Triage.</li>
+      <li><span>Output</span>A coding session works in the cloud and returns a draft pull request, with progress shown in a session on the issue.</li>
+      <li><span>Reporting</span>Views filtered by Delegate and Insights by agent-session status describe agent work after it has happened.</li>
+      <li><span>Inbox</span>Priority inbox sorts notifications by source or by a filter you define.</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2>Where it breaks</h2>
+    <div class="grid2">
+      <div class="card"><span class="n">Scattered</span><h3>Review lives in three places</h3><p>A finished run leaves an inbox notification, a session on the issue and a pull request on GitHub. Judging one result means opening all three.</p></div>
+      <div class="card"><span class="n">Flat</span><h3>Inbox ranks by source, not risk</h3><p>A typo fix in docs and a change to a delivery worker arrive as the same kind of notification, in the order they finished.</p></div>
+      <div class="card"><span class="n">Disconnected</span><h3>Intent and outcome never meet</h3><p>The issue says what you wanted. The pull request shows what changed. Nothing shows which parts of the request the agent proved and which it guessed.</p></div>
+      <div class="card"><span class="n">Unscaled</span><h3>Every Loop multiplies the pile</h3><p>Reviewing results one at a time turns the human into the bottleneck, or into a rubber stamp. Both waste the agent.</p></div>
+    </div>
+    <p class="note">These four come from how I use agents on my own issues. The first three can be checked against the docs above.</p>
+  </div>
+
+  <div class="sec">
+    <h2>The path to a decision</h2>
+    <p class="plabel">Today</p>
+    <div class="path"><span class="st">Inbox ping</span><span class="ar">→</span><span class="st">Open issue</span><span class="ar">→</span><span class="st">Open agent session</span><span class="ar">→</span><span class="st">Open pull request on GitHub</span><span class="ar">→</span><span class="st">Read the diff</span><span class="ar">→</span><span class="st">Return to Linear</span><span class="ar">→</span><span class="st">Comment or close</span></div>
+    <p class="plabel">Proposed</p>
+    <div class="path good"><span class="st">Open Review</span><span class="ar">→</span><span class="st">Read the evidence</span><span class="ar">→</span><span class="st">Decide</span></div>
+  </div>
+
+  <div class="sec">
+    <h2>Why it matters</h2>
+    <p>The value of delegation is capped by how cheaply a person can say yes or no. If review stays expensive, teams either stop delegating or start approving without reading. A faster agent makes this worse, because it produces results faster than anyone can judge them.</p>
+  </div>
+
+  <div class="sec">
+    <h2>What a better experience should accomplish</h2>
+    <div class="grid2">
+      <div class="card"><h3>Judgment goes where the evidence is</h3><p>Show the request and the proof for it side by side, in one place.</p></div>
+      <div class="card"><h3>Rank by risk, not recency</h3><p>Start with what needs a human. Batch what does not.</p></div>
+      <div class="card"><h3>No is as cheap as yes</h3><p>Requesting changes or taking over is one key away, never a trip to another tool.</p></div>
+      <div class="card"><h3>Trust is a dial</h3><p>People set rules for what approves itself, preview what a rule would have done, and reverse it.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>How I would know it worked</h2>
+    <ul class="facts">
+      <li><span>Speed</span>Time from agent finished to human decision.</li>
+      <li><span>Coverage</span>Share of agent results reviewed within one working day.</li>
+      <li><span>Quality</span>Rework rate: results that came back with requested changes.</li>
+      <li><span>Trust</span>Share approved by rule, and how often those are later reverted.</li>
+    </ul>
+  </div>
+
+  <div class="src">
+    <p><b>Sources (Linear documentation)</b></p>
+    <ul>
+      <li><a href="https://linear.app/docs/agents-in-linear.md" target="_blank" rel="noopener">Agents in Linear</a></li>
+      <li><a href="https://linear.app/docs/coding-sessions" target="_blank" rel="noopener">Coding sessions</a></li>
+      <li><a href="https://linear.app/docs/triage" target="_blank" rel="noopener">Triage</a> and <a href="https://linear.app/docs/triage-intelligence" target="_blank" rel="noopener">Triage Intelligence</a></li>
+      <li><a href="https://linear.app/changelog/2026-09-03-priority-inbox" target="_blank" rel="noopener">Priority inbox changelog</a></li>
+    </ul>
+  </div>
+</div></section>
+
+<!-- EXPLORATIONS -->
+<section class="view" id="v-explore" hidden><div class="wrap">
+  <p class="eyebrow">Explore and choose a direction</p>
+  <h1>Three ways to make review cheap. One of them survives volume.</h1>
+  <p class="lede">I sketched each direction against the same seven sample results, then scored them against what the problem demands. The winner borrows the best part of the other two.</p>
+
+  <div class="sec grid3">
+    <div class="card">
+      <div class="wf" aria-hidden="true">
+        <div class="row"><i class="dotw"></i><span class="bar"></span><span class="btnw"></span></div>
+        <div class="row"><i class="dotw"></i><span class="bar"></span><span class="btnw"></span></div>
+        <div class="row"><i class="dotw"></i><span class="bar"></span><span class="btnw"></span></div>
+        <div class="row"><i class="dotw"></i><span class="bar"></span><span class="btnw"></span></div>
+      </div>
+      <h3>A. Smarter inbox</h3><p>Agent results become rich inbox rows with approve built in.</p>
+      <span class="tag">Strengths</span><ul class="t"><li>No new surface to learn</li><li>Fastest to build</li></ul>
+      <span class="tag">Weaknesses</span><ul class="t"><li>Chronological and mixed with mentions</li><li>No room for evidence</li><li>Batching is awkward</li></ul>
+      <p style="margin-top:12px"><span class="chip">Folded in: inbox row links into the queue</span></p>
+    </div>
+    <div class="card">
+      <div class="wf" aria-hidden="true">
+        <div class="tabsw"><i></i><i class="on"></i><i></i></div>
+        <div class="bar a" style="flex:none;width:60%"></div>
+        <div class="box"><div class="row"><i class="dotw"></i><span class="bar"></span></div><div class="row"><i class="dotw"></i><span class="bar"></span></div></div>
+        <div class="row"><span class="bar s a"></span><span class="bar s"></span></div>
+      </div>
+      <h3>B. Review tab on the issue</h3><p>Each issue gets an Agent review tab with the full evidence.</p>
+      <span class="tag">Strengths</span><ul class="t"><li>Richest context, where the request lives</li><li>Natural home for the evidence</li></ul>
+      <span class="tag">Weaknesses</span><ul class="t"><li>One at a time, so you open N issues</li><li>You must already know which to open</li></ul>
+      <p style="margin-top:12px"><span class="chip">Folded in: same review card on the issue</span></p>
+    </div>
+    <div class="card">
+      <div class="wf two" aria-hidden="true">
+        <div><span class="bar"></span><span class="bar a"></span><span class="bar"></span><span class="bar"></span></div>
+        <div><span class="bar a" style="width:70%;flex:none"></span><div class="box"><span class="bar"></span><span class="bar"></span></div><div class="row"><span class="bar s a"></span><span class="bar s"></span></div></div>
+      </div>
+      <h3>C. Review queue</h3><p>A dedicated view, ranked by risk, with evidence beside the list and batch actions.</p>
+      <span class="tag">Strengths</span><ul class="t"><li>Scales with Loops</li><li>Evidence and decision in one pane</li><li>Safe results batch, risky ones get attention</li></ul>
+      <span class="tag">Weaknesses</span><ul class="t"><li>A new surface to learn</li><li>Risk rating must earn trust</li></ul>
+      <p style="margin-top:12px"><span class="chip win">Chosen</span></p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Scoring against the problem</h2>
+    <div class="scroll"><table class="tbl">
+      <thead><tr><th>Criterion</th><th>A. Inbox</th><th>B. Issue tab</th><th>C. Queue</th></tr></thead>
+      <tbody>
+        <tr><td>Speed to a decision</td><td class="dots" aria-label="3 of 4">●●●○</td><td class="dots" aria-label="2 of 4">●●○○</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
+        <tr><td>Holds up when Loops multiply results</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
+        <tr><td>Room for evidence</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
+        <tr><td>Familiar to existing users</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots" aria-label="3 of 4">●●●○</td><td class="dots c" aria-label="2 of 4">●●○○</td></tr>
+        <tr><td>Cheap to build</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots" aria-label="3 of 4">●●●○</td><td class="dots c" aria-label="2 of 4">●●○○</td></tr>
+      </tbody></table></div>
+    <p class="note">My own judgment, meant to start a conversation. C loses on familiarity and cost, and wins on the two criteria the problem is about.</p>
+  </div>
+
+  <div class="sec">
+    <h2>What I cut</h2>
+    <div class="grid2">
+      <div class="card"><h3>Auto-merge whatever passes CI</h3><p>It removes the human from work the human is still accountable for. Passing tests prove the code runs. They do not prove it does what the issue asked.</p></div>
+      <div class="card"><h3>A chat summary of each run</h3><p>Prose is something a person has to re-verify. A row that pairs a claim with its proof can be scanned in a second.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Decision and risks</h2>
+    <p>I chose C and kept the useful part of A and B. The inbox row links into the queue and the issue shows the same review card, so there is one component and three places it appears. Two risks remain: a new surface needs a reason to exist beyond novelty, and a risk rating that people cannot explain will not be trusted. The prototype answers the second by showing the reasons behind every rating and a preview of what any rule would do.</p>
+  </div>
+</div></section>
+
+<!-- PROTOTYPE -->
+<section class="view" id="v-prototype" hidden><div class="wrap">
+  <p class="eyebrow">Build the experience</p>
+  <h1 class="wide">Seven agent results. Clear the queue.</h1>
+  <p class="lede">A working prototype with sample data. Risk, grouping, batching and rules are computed from the data, so the behavior is real.</p>
+  <div class="tips" style="margin-top:20px">
+    <span><kbd>J</kbd> <kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span>
+    <button class="btn sm" data-reset type="button">Reset demo</button>
+  </div>
+  <div id="app" class="app" aria-live="polite"></div>
+  <div class="sec grid3" style="margin-top:28px">
+    <div class="card"><h3>Reasons beside every rating</h3><p>Open Why this rating on any result. A score without reasons is a verdict. With reasons it is a starting point you can disagree with.</p></div>
+    <div class="card"><h3>Criteria come from the issue</h3><p>The checklist is the issue's own acceptance criteria, each with the agent's proof. A gap is highlighted instead of buried in a diff.</p></div>
+    <div class="card"><h3>Overrides change the primary action</h3><p>Override an assumption and Approve becomes Send overrides. The interface never lets you approve work you just disagreed with.</p></div>
+  </div>
+</div></section>
+
+<!-- LEVERAGE -->
+<section class="view" id="v-leverage" hidden><div class="wrap">
+  <p class="eyebrow">Create leverage</p>
+  <h1 class="wide">The queue is one use of five parts the whole product can reuse.</h1>
+  <p class="lede">Every agent feature in Linear asks the same question: can a person tell what happened and decide quickly? These parts answer it once.</p>
+
+  <div class="sec">
+    <h2>For the product: components</h2>
+    <div class="grid3">
+      <div class="card"><h3>Evidence row</h3><p>One claim, its proof, its status. Used by the queue, the issue and Triage Intelligence suggestions.</p>
+        <ul class="crit mini" style="margin-top:12px"><li><span class="ic g">✓</span><div><div class="q">Covered by a new test</div><div class="e">digest.spec.ts line 42</div></div></li><li class="gap"><span class="ic n">!</span><div><div class="q">Works with no timezone set</div><div class="e">No evidence found</div></div></li></ul></div>
+      <div class="card"><h3>Risk pill with reasons</h3><p>Never shown without the why. Rules, Insights and notifications can all read the same rating.</p>
+        <div class="mini"><span class="pill low" style="width:max-content">Low risk</span><span class="pill med" style="width:max-content">Medium</span><span class="pill high" style="width:max-content">High</span></div></div>
+      <div class="card"><h3>Assumption chip</h3><p>Anything the agent decided on its own, with keep and override. Turns hidden choices into visible ones.</p>
+        <ul class="assume mini" style="margin-top:12px"><li><span>Used the saved timezone</span><span class="bt"><button aria-pressed="true">Keep</button><button aria-pressed="false">Override</button></span></li></ul></div>
+      <div class="card"><h3>Agent attribution</h3><p>Who did it, who delegated it, which Loop started it. The same line everywhere an agent appears.</p>
+        <p class="mini" style="color:var(--fg)"><span class="av">L</span>Linear Agent <span style="color:var(--muted)">· from Loop: Triage bugs · 14m</span></p></div>
+      <div class="card"><h3>Decision bar</h3><p>One primary action, one way to steer, one way out. Learn it once, use it in every review.</p>
+        <div class="mini" style="display:flex;gap:8px;flex-wrap:wrap"><span class="btn pri sm">Approve</span><span class="btn sm">Request changes</span><span class="btn sm">Take over</span></div></div>
+    </div>
+    <p class="note">Each part lands in three places: the queue, the issue and the inbox row. A change to one improves all three.</p>
+  </div>
+
+  <div class="sec">
+    <h2>For the team: principles for agent experiences</h2>
+    <div class="two-col">
+      <div class="card"><ul>
+        <li><b>Delegate, never abdicate.</b> Accountability stays human, so the interface keeps the human informed.</li>
+        <li><b>Show work, not chat.</b> Evidence a person can scan beats prose they must re-check.</li>
+        <li><b>Rank by risk, not recency.</b> Attention is the scarce resource.</li>
+      </ul></div>
+      <div class="card"><ul>
+        <li><b>No costs the same as yes.</b> Disagreement is a normal path, not an escape hatch.</li>
+        <li><b>Trust is a dial.</b> Automation is opt-in, previewed and reversible.</li>
+        <li><b>Explain every score.</b> A rating without reasons will be ignored.</li>
+      </ul></div>
+    </div>
+    <p class="note">These double as a review checklist for any new agent feature. Triage Intelligence and Loops are the first two to run it against.</p>
+  </div>
+
+  <div class="sec">
+    <h2>For the way design gets done</h2>
+    <div class="two-col">
+      <div class="card"><h3>Prototype as data</h3><p>The prototype runs from one small data spec at the top of its script. Designers and engineers edit the sample results and the queue, the risk ratings and the rules all recompute. A design review can change the argument by changing the data.</p></div>
+      <div class="card"><h3>Built in hours, not sprints</h3><p>Because the prototype is code, the conversation with engineering starts on behavior: which signals feed the rating, what a rule can see. That is where the real cost is hiding.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Rollout and open questions</h2>
+    <div class="grid3">
+      <div class="card phase"><b>Phase 1. Evidence, read only</b><span>Assemble criteria, assumptions and checks from existing session data. No new actions.</span></div>
+      <div class="card phase"><b>Phase 2. Queue and batching</b><span>Risk ranking, keyboard flow, batch approve for low-risk results.</span></div>
+      <div class="card phase"><b>Phase 3. Rules</b><span>Opt-in auto-approve with preview and revert. Measure reverted approvals before widening.</span></div>
+    </div>
+    <ul class="facts" style="margin-top:18px">
+      <li><span>Open</span>Which signals can Linear see reliably for a rating: paths touched, CI, dependency changes, criteria coverage?</li>
+      <li><span>Open</span>How do we prevent a falsely safe rating from becoming a habit of not reading?</li>
+      <li><span>Open</span>Who owns the review when the person who delegated is out?</li>
+    </ul>
+  </div>
+</div></section>
+
+<!-- AI PROCESS -->
+<section class="view" id="v-ai" hidden><div class="wrap">
+  <p class="eyebrow">AI process</p>
+  <h1 class="wide">AI did the volume. I made the calls.</h1>
+  <p class="lede">I used Claude for research, drafting and building. The framing, the cuts and the places where a human has to stay in the loop are my judgment.</p>
+  <div class="sec two-col">
+    <div class="card"><h3>Where Claude worked</h3><ul>
+      <li>Read Linear's current docs on agents, coding sessions, Triage Intelligence and Priority inbox, so the problem rests on what the product does today.</li>
+      <li>Pressure-tested my problem statement and proposed breakpoints for me to check against my own use.</li>
+      <li>Drafted the three directions and sketched each against the same seven sample results.</li>
+      <li>Built the clickable prototype from a small data spec, including risk scoring, batching and rules.</li>
+    </ul></div>
+    <div class="card"><h3>Where my judgment shaped it</h3><ul>
+      <li>Choosing the product and the experience from my own daily use of agents.</li>
+      <li>Deciding the problem is the cost of review, not the quality of the agent.</li>
+      <li>Cutting auto-merge and chat summaries, because accountability has to stay human.</li>
+      <li>Keeping the primary action manual, with rules opt-in, previewed and reversible.</li>
+      <li>Sequencing the rollout so evidence ships before automation.</li>
+    </ul></div>
+  </div>
+</div></section>
+</main>
+
+<script>
+/* ---------- routing ---------- */
+const VIEWS=['problem','explore','prototype','leverage','ai'];
+function route(){
+  let h=location.hash.slice(1); if(!VIEWS.includes(h)) h='problem';
+  VIEWS.forEach(v=>{document.getElementById('v-'+v).hidden=(v!==h)});
+  document.querySelectorAll('#tabs a').forEach(a=>a.setAttribute('aria-current',a.getAttribute('href')==='#'+h?'page':'false'));
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route); route();
+const inProto=()=>(location.hash==='#prototype');
+
+/* ---------- data spec: edit this and everything recomputes ---------- */
+const ITEMS=[
+ {id:'ENG-387',title:'Add retry with backoff to webhook delivery',agent:'Codex',from:'me',origin:'Delegated by you',ago:'6m',tests:true,sensitive:'the webhook delivery worker',majorDep:false,kind:'feature',
+  criteria:[
+   {q:'Failed deliveries retry up to 5 times',s:'gap',e:'Retry count is configurable. No test reaches the 5th attempt.'},
+   {q:'Backoff is exponential with jitter',s:'ok',e:'backoff.spec.ts checks the delay curve'},
+   {q:'Dead-letter after the final failure',s:'gap',e:'No dead-letter path found in the diff'},
+   {q:'Existing deliveries are unaffected',s:'ok',e:'Delivery tests unchanged and passing'}],
+  assume:['Chose a 1 second base delay, doubling, capped at 5 minutes','Treated 4xx responses as non-retryable, except 429'],
+  files:[{n:'workers/webhook-delivery.ts',a:71,d:9},{n:'workers/backoff.ts',a:22,d:0,diff:['+ export function nextDelay(attempt: number): number {','+   const base = Math.min(1000 * 2 ** attempt, 300_000);','+   return base / 2 + Math.random() * (base / 2);','+ }']},{n:'workers/webhook-delivery.spec.ts',a:14,d:2}],
+  checks:'CI 4 of 4 passing'},
+ {id:'ENG-409',title:'Bump date-fns from 3.6 to 4.1',agent:'Linear Agent',from:'loop',origin:'Loop: Dependency updates',ago:'22m',tests:true,sensitive:null,majorDep:true,kind:'deps',
+  criteria:[
+   {q:'Build and tests pass',s:'ok',e:'CI 4 of 4 passing'},
+   {q:'No deprecated API usage remains',s:'ok',e:'Codemod replaced 9 call sites'},
+   {q:'Bundle size does not grow',s:'gap',e:'Not measured in this run'}],
+  assume:['Skipped the new timezone package because no call site needs it'],
+  files:[{n:'package.json',a:1,d:1},{n:'pnpm-lock.yaml',a:287,d:280},{n:'src/ (9 call sites)',a:20,d:17}],
+  checks:'CI 4 of 4 passing'},
+ {id:'ENG-412',title:'Fix timezone off-by-one in the weekly digest email',agent:'Linear Agent',from:'me',origin:'Delegated by you',ago:'14m',tests:true,sensitive:null,majorDep:false,kind:'bugfix',
+  criteria:[
+   {q:'Digest groups issues by the recipient’s local day',s:'ok',e:'New test covers UTC-8 and UTC+13'},
+   {q:'Send time is unchanged',s:'ok',e:'Scheduler untouched, 0 lines changed'},
+   {q:'Works when the user has no timezone set',s:'gap',e:'No test for a missing timezone. Code falls back to UTC.'}],
+  assume:['Used the saved timezone, not the browser’s, because digests render on the server','Left the Week starts on setting alone'],
+  files:[{n:'src/digest/group-by-day.ts',a:11,d:3,diff:['- const day = new Date(issue.completedAt).toISOString().slice(0, 10);','+ const tz = user.timezone ?? \'UTC\';','+ const day = formatInTimeZone(issue.completedAt, tz, \'yyyy-MM-dd\');']},{n:'src/digest/digest.spec.ts',a:11,d:1}],
+  checks:'CI 4 of 4 passing'},
+ {id:'ENG-416',title:'Migrate user.preferences JSON column to typed fields',agent:'Linear Agent',from:'me',origin:'Delegated by you',ago:'31m',tests:true,sensitive:'the users table',majorDep:false,kind:'migration',
+  q:{text:'Should I backfill existing rows in this pull request, or ship the schema change first and backfill in a follow-up?',ctx:'The backfill touches every user row. I have drafted the schema and the migration, and I have not opened a pull request yet.',opts:['Backfill in this pull request','Follow-up pull request (safer)','Let me decide later']},
+  criteria:[],assume:[],files:[],checks:'No pull request yet'},
+ {id:'ENG-398',title:'Update API rate-limit docs for /v2/search',agent:'Linear Agent',from:'loop',origin:'Loop: Docs freshness',ago:'41m',tests:true,sensitive:null,majorDep:false,kind:'docs',
+  criteria:[
+   {q:'Documents the 60 requests per minute limit',s:'ok',e:'docs/api/search.md line 34'},
+   {q:'Mentions the Retry-After header',s:'ok',e:'docs/api/search.md line 41'},
+   {q:'Code samples still run',s:'ok',e:'Snippets linted and executed'}],
+  assume:[],files:[{n:'docs/api/search.md',a:21,d:5}],checks:'CI 3 of 3 passing'},
+ {id:'ENG-405',title:'Rename workspace to team in empty-state copy',agent:'Cursor',from:'me',origin:'Delegated by you',ago:'52m',tests:true,sensitive:null,majorDep:false,kind:'copy',
+  criteria:[
+   {q:'All empty states say team',s:'ok',e:'14 strings found, 12 changed'},
+   {q:'Settings and billing keep workspace',s:'ok',e:'2 left on purpose'},
+   {q:'Snapshot tests updated',s:'ok',e:'6 snapshots regenerated'}],
+  assume:['Kept workspace in legal copy'],files:[{n:'src/empty-states/ (6 files)',a:12,d:12}],checks:'CI 4 of 4 passing'},
+ {id:'ENG-401',title:'Remove unused feature flag new_sidebar_v1',agent:'Cursor',from:'loop',origin:'Loop: Flag cleanup',ago:'1h',tests:true,sensitive:null,majorDep:false,kind:'cleanup',
+  criteria:[
+   {q:'No references to the flag remain',s:'ok',e:'Search finds 0 matches after the change'},
+   {q:'Flag has been at 100% in production',s:'ok',e:'Fully rolled out for 38 days'},
+   {q:'No runtime behavior change',s:'ok',e:'Only the dead branch removed, snapshots unchanged'}],
+  assume:[],files:[{n:'src/ (4 files)',a:0,d:58}],checks:'CI 4 of 4 passing'}
+];
+const TOTAL=ITEMS.length;
+
+/* ---------- derived values ---------- */
+const adds=i=>i.files.reduce((n,f)=>n+f.a,0), dels=i=>i.files.reduce((n,f)=>n+f.d,0);
+const gaps=i=>i.criteria.filter(c=>c.s==='gap').length;
+function risk(i){
+  if(i.q) return {score:0,level:'ask',reasons:[{t:'The agent needs a decision before it can open a pull request',n:true}]};
+  let s=0,r=[];
+  if(!i.tests){s+=3;r.push({t:'CI is failing',n:true})}else r.push({t:'All CI checks pass',g:true});
+  if(i.sensitive){s+=2;r.push({t:'Touches '+i.sensitive,n:true})}else r.push({t:'No sensitive paths touched',g:true});
+  if(i.majorDep){s+=1;r.push({t:'Includes a major version bump',n:true})}
+  const g=gaps(i);
+  if(g){s+=1;r.push({t:g+(g>1?' acceptance criteria have':' acceptance criterion has')+' no evidence',n:true})}else r.push({t:'Every acceptance criterion has evidence',g:true});
+  return {score:s,level:s>=3?'high':s>=1?'med':'low',reasons:r};
+}
+const LABEL={low:'Low risk',med:'Medium',high:'High',ask:'Question'};
+const groupOf=i=>i.q?'ask':(risk(i).score===0?'safe':'look');
+const GROUPS=[{k:'ask',l:'Agent asked a question'},{k:'look',l:'Needs a look'},{k:'safe',l:'Safe to approve'}];
+
+/* ---------- rules ---------- */
+const RULES=[
+ {k:'tests',l:'CI checks pass',d:'Every check on the pull request is green',f:i=>i.tests},
+ {k:'docs',l:'Docs or copy changes only',d:'No code paths touched',f:i=>i.kind==='docs'||i.kind==='copy'},
+ {k:'small',l:'Under 30 lines changed',d:'Added plus removed',f:i=>adds(i)+dels(i)<30},
+ {k:'deps',l:'No major dependency bumps',d:'Minor and patch updates are fine',f:i=>!i.majorDep},
+ {k:'sens',l:'No sensitive paths',d:'Billing, auth, workers and database tables',f:i=>!i.sensitive},
+ {k:'evid',l:'Every criterion has evidence',d:'No gaps flagged on the issue’s acceptance criteria',f:i=>gaps(i)===0}
+];
+const matches=()=>ITEMS.filter(i=>i.st==='pending'&&!i.q&&RULES.every(r=>!S.rules[r.k]||r.f(i)));
+
+/* ---------- state ---------- */
+let S;
+function fresh(){
+  ITEMS.forEach(i=>{i.st='pending';i.ov={}});
+  S={sel:null,checked:new Set(),filter:'all',compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
+     rules:{tests:true,docs:true,small:false,deps:false,sens:false,evid:false}};
+  S.sel=(ordered()[0]||{}).id||null;
+}
+const get=id=>ITEMS.find(i=>i.id===id);
+function visible(){return ITEMS.filter(i=>i.st==='pending'&&(S.filter==='all'||i.from===S.filter))}
+function groups(){const g={ask:[],look:[],safe:[]};visible().forEach(i=>g[groupOf(i)].push(i));g.look.sort((a,b)=>risk(b).score-risk(a).score);return g}
+function ordered(){const g=groups();return [...g.ask,...g.look,...g.safe]}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- render ---------- */
+function pendingCount(){return ITEMS.filter(i=>i.st==='pending').length}
+function renderList(){
+  const g=groups(), all=ordered();
+  let h=`<div class="lh"><div class="r"><b>Review <span style="color:var(--muted);font-weight:500">${all.length} waiting</span></b><button class="btn sm" data-act="rules" type="button">Review rules</button></div>
+  <div class="seg" role="group" aria-label="Filter">${[['all','All'],['me','Delegated by me'],['loop','From Loops']].map(([k,l])=>`<button type="button" data-act="filter" data-v="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join('')}</div></div>`;
+  if(!all.length) h+=`<div class="empty"><p>Nothing waiting in this view.</p></div>`;
+  GROUPS.forEach(({k,l})=>{
+    if(!g[k].length) return;
+    const allChecked=k==='safe'&&g[k].every(i=>S.checked.has(i.id));
+    h+=`<div class="gh"><span>${l} (${g[k].length})</span>${k==='safe'?`<label><input type="checkbox" data-selall ${allChecked?'checked':''}>Select all</label>`:''}</div>`;
+    g[k].forEach(i=>{
+      const rk=risk(i);
+      h+=`<div class="rowwrap ${S.sel===i.id?'sel':''}">${k==='safe'?`<input type="checkbox" data-check="${i.id}" aria-label="Select ${esc(i.id)}" ${S.checked.has(i.id)?'checked':''}>`:''}
+      <button class="row" type="button" data-act="select" data-id="${i.id}" aria-current="${S.sel===i.id}">
+        <span class="t">${esc(i.title)}</span>
+        <span class="m"><span class="id">${i.id}</span><span><span class="av">${i.agent[0]}</span>${i.agent}</span>${i.q?'':`<span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span>`}<span>${i.ago}</span><span class="pill ${rk.level}">${LABEL[rk.level]}</span></span>
+      </button></div>`;
+    });
+  });
+  return h;
+}
+function renderDetail(){
+  const i=get(S.sel);
+  if(!i||i.st!=='pending'){
+    const done=pendingCount()===0;
+    return done?`<div class="empty"><h3>Queue clear</h3><p>${TOTAL} agent results handled. Each one with its evidence in view.</p><button class="btn pri" data-reset type="button">Replay the demo</button></div>`
+      :`<div class="empty"><h3>Select a result</h3><p>Pick one from the list to see its evidence.</p></div>`;
+  }
+  const rk=risk(i), ovN=Object.keys(i.ov).filter(k=>i.ov[k]).length;
+  let h=`<div class="dbody"><div class="dh"><span class="id">${i.id}</span><h3>${esc(i.title)}</h3>
+    <div class="m"><span class="av">${i.agent[0]}</span>${i.agent} · ${esc(i.origin)} · ${i.ago} ago</div></div>`;
+  h+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='high'?'Read this one. Two things need your eyes.':'Check the flagged item, then approve.'}</span></div>
+    <details><summary>Why this rating</summary><ul>${rk.reasons.map(r=>`<li><span class="ic ${r.g?'g':'n'}">${r.g?'✓':'!'}</span>${esc(r.t)}</li>`).join('')}</ul></details></div>`;
+  if(i.q){
+    h+=`<div class="qcard"><p>${esc(i.q.text)}</p><span style="font-size:13.5px;color:var(--muted)">${esc(i.q.ctx)}</span><div class="opts">${i.q.opts.map((o,k)=>`<button class="btn ${k===1?'pri':''}" type="button" data-act="answer" data-id="${i.id}" data-v="${k}">${esc(o)}</button>`).join('')}</div></div></div>`;
+    return h;
+  }
+  h+=`<div><div class="sh"><span>Intent and outcome</span><span>${i.criteria.length} criteria from the issue</span></div><ul class="crit">${i.criteria.map(c=>`<li class="${c.s==='gap'?'gap':''}"><span class="ic ${c.s==='ok'?'g':'n'}">${c.s==='ok'?'✓':'!'}</span><div><div class="q">${esc(c.q)}</div><div class="e">${esc(c.e)}</div></div></li>`).join('')}</ul></div>`;
+  h+=`<div><div class="sh"><span>What the agent assumed</span></div>${i.assume.length?`<ul class="assume">${i.assume.map((a,k)=>`<li class="${i.ov[k]?'ov':''}"><span>${esc(a)}</span><span class="bt"><button type="button" data-act="keep" data-id="${i.id}" data-k="${k}" aria-pressed="${!i.ov[k]}">Keep</button><button type="button" data-act="over" data-id="${i.id}" data-k="${k}" aria-pressed="${!!i.ov[k]}">Override</button></span></li>`).join('')}</ul>`:`<p style="font-size:14px;color:var(--muted)">None. The agent followed existing patterns.</p>`}</div>`;
+  h+=`<div><div class="sh"><span>Changes</span><span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span></div><ul class="files">${i.files.map((f,k)=>{const key=i.id+':'+k;return `<li><div class="fr"><span>${esc(f.n)} <span class="da">+${f.a}</span> <span class="dd">−${f.d}</span></span>${f.diff?`<button type="button" data-act="diff" data-key="${key}">${S.open[key]?'Hide':'Preview'}</button>`:''}</div>${f.diff&&S.open[key]?`<div class="diff">${f.diff.map(l=>`<div class="${l[0]==='+'?'a':'d'}">${esc(l)}</div>`).join('')}</div>`:''}</li>`}).join('')}</ul></div>`;
+  h+=`<div class="chk"><span><b>${esc(i.checks)}</b></span><span>No preview deployment</span></div></div>`;
+  h+=`<div class="bar-d">${S.compose?`<textarea id="cmt" placeholder="Tell ${esc(i.agent)} what to change">${esc(S.text)}</textarea>
+    <div class="steer"><button type="button" data-act="steer" data-t="Add a test for the missing case.">Add a test for the gap</button><button type="button" data-act="steer" data-t="Split this into smaller pull requests.">Split it up</button><button type="button" data-act="steer" data-t="Explain the assumption before changing it.">Ask why</button></div>`:''}
+    <div class="r">${S.compose?`<button class="btn pri" type="button" data-act="send" data-id="${i.id}">Send to ${esc(i.agent)}</button><button class="btn" type="button" data-act="cancel">Cancel</button>`
+      :`<button class="btn pri" type="button" data-act="${ovN?'sendov':'approve'}" data-id="${i.id}">${ovN?`Send ${ovN} override${ovN>1?'s':''}`:'Approve and merge'} <kbd>${ovN?'R':'A'}</kbd></button>
+        <button class="btn" type="button" data-act="compose">Request changes <kbd>R</kbd></button><span class="sp"></span><button class="btn" type="button" data-act="takeover" data-id="${i.id}">Take over <kbd>E</kbd></button>`}</div></div>`;
+  return h;
+}
+function renderRules(){
+  const m=matches(), risky=m.filter(i=>risk(i).score>0);
+  return `<div class="modal" data-act="rulesbg"><div class="mbox" role="dialog" aria-label="Review rules">
+    <div><h3>Review rules</h3><p style="margin-top:4px">Approve automatically when a result meets every rule you turn on. You always see what a rule would do before it does it.</p></div>
+    ${RULES.map(r=>`<label class="rule"><input type="checkbox" data-rule="${r.k}" ${S.rules[r.k]?'checked':''}><span>${r.l}<small>${r.d}</small></span></label>`).join('')}
+    <div class="prev"><b>Would approve ${m.length} of ${pendingCount()} waiting</b>${m.length?`<div class="ids">${m.map(i=>`<span>${i.id}</span>`).join('')}</div>`:''}
+      ${risky.length?`<span class="warnl">${risky.map(i=>i.id).join(', ')} ${risky.length>1?'have':'has'} an acceptance criterion with no evidence. Add the evidence rule to keep ${risky.length>1?'them':'it'} in your queue.</span>`:''}</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" type="button" data-act="rulesclose">Close</button><button class="btn pri" type="button" data-act="rulessave" ${m.length?'':'disabled'}>Save and approve ${m.length}</button></div></div></div>`;
+}
+function renderAll(){
+  const app=document.getElementById('app');
+  const ls=app.querySelector('.ls'), dt=app.querySelector('.dt'); const sl=ls?ls.scrollTop:0, sd=dt&&dt.dataset.sel===S.sel?dt.scrollTop:0;
+  app.innerHTML=`<aside class="sb" aria-hidden="true"><div class="ws"><i></i>Acme Eng</div>
+    <div class="nv"><span>Inbox</span><em>3</em></div><div class="nv"><span>My issues</span></div>
+    <div class="nv on"><span>Review</span><em>${pendingCount()}</em></div><div class="nv"><span>Triage</span><em>2</em></div>
+    <div class="sbh">Workspace</div><div class="nv"><span>Projects</span></div><div class="nv"><span>Views</span></div><div class="nv"><span>Loops</span></div><div class="nv"><span>Insights</span></div></aside>
+    <section class="ls" aria-label="Review queue">${renderList()}</section>
+    <section class="dt" data-sel="${S.sel}" aria-label="Evidence">${renderDetail()}</section>
+    ${S.rulesOpen?renderRules():''}
+    ${S.checked.size?`<div class="toast" role="status"><span>${S.checked.size} selected</span><button type="button" data-act="batch">Approve ${S.checked.size}</button></div>`:S.toast?`<div class="toast" role="status"><span>${esc(S.toast)}</span>${S.undo?'<button type="button" data-act="undo">Undo</button>':''}</div>`:''}`;
+  const l2=app.querySelector('.ls'), d2=app.querySelector('.dt'); if(l2)l2.scrollTop=sl; if(d2)d2.scrollTop=sd;
+}
+function toast(msg,undo){S.toast=msg;if(!undo)S.undo=null;clearTimeout(S.tt);S.tt=setTimeout(()=>{S.toast=null;S.undo=null;renderAll()},7000)}
+function apply(ids,st,msg){
+  const before=ordered().map(i=>i.id), idx=Math.max(0,before.indexOf(S.sel));
+  S.undo={ids:[...ids],prev:ids.map(id=>get(id).st),sel:S.sel};
+  ids.forEach(id=>{get(id).st=st;S.checked.delete(id)});
+  S.compose=false;S.text='';
+  const o=ordered(); S.sel=o.length?o[Math.min(idx,o.length-1)].id:null;
+  toast(msg,true); renderAll();
+}
+function move(d){const o=ordered();if(!o.length)return;const k=o.findIndex(i=>i.id===S.sel);S.sel=o[Math.max(0,Math.min(o.length-1,(k<0?0:k+d)))].id;S.compose=false;renderAll();const r=document.querySelector('.rowwrap.sel');if(r)r.scrollIntoView({block:'nearest'})}
+
+/* ---------- events ---------- */
+const appEl=document.getElementById('app');
+appEl.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]'); if(!t) return;
+  const a=t.dataset.act, id=t.dataset.id;
+  if(a==='rulesbg'){if(e.target!==t)return;S.rulesOpen=false;return renderAll()}
+  if(a==='select'){S.sel=id;S.compose=false;S.text='';renderAll()}
+  else if(a==='filter'){S.filter=t.dataset.v;const o=ordered();if(!o.find(i=>i.id===S.sel))S.sel=o[0]?o[0].id:null;renderAll()}
+  else if(a==='approve'){const i=get(id);apply([id],'approved','Approved '+id+'. Merging now.')}
+  else if(a==='compose'){S.compose=true;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}
+  else if(a==='cancel'){S.compose=false;S.text='';renderAll()}
+  else if(a==='steer'){S.text=(S.text?S.text+' ':'')+t.dataset.t;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}
+  else if(a==='send'){const i=get(id);apply([id],'changes','Sent to '+i.agent+'. '+id+' comes back when it finishes.')}
+  else if(a==='sendov'){const i=get(id);apply([id],'changes','Sent your overrides to '+i.agent+'. '+id+' comes back when it finishes.')}
+  else if(a==='takeover'){const i=get(id);apply([id],'takeover','Opened '+id+' in your editor with the full session context.')}
+  else if(a==='answer'){const i=get(id);apply([id],'answered','Answered. '+i.agent+' is continuing '+id+'.')}
+  else if(a==='keep'){get(id).ov[t.dataset.k]=false;renderAll()}
+  else if(a==='over'){get(id).ov[t.dataset.k]=true;renderAll()}
+  else if(a==='diff'){S.open[t.dataset.key]=!S.open[t.dataset.key];renderAll()}
+  else if(a==='undo'&&S.undo){const u=S.undo;u.ids.forEach((x,k)=>{get(x).st=u.prev[k]});S.sel=u.sel;S.toast=null;S.undo=null;renderAll()}
+  else if(a==='batch'){const ids=[...S.checked];apply(ids,'approved','Approved '+ids.length+' results. Merging now.')}
+  else if(a==='rules'){S.rulesOpen=true;renderAll()}
+  else if(a==='rulesclose'){S.rulesOpen=false;renderAll()}
+  else if(a==='rulessave'){const ids=matches().map(i=>i.id);S.rulesOpen=false;apply(ids,'auto','Rules saved. '+ids.length+' result'+(ids.length>1?'s':'')+' approved automatically.')}
+});
+appEl.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.check){t.checked?S.checked.add(t.dataset.check):S.checked.delete(t.dataset.check);renderAll()}
+  else if(t.hasAttribute('data-selall')){groups().safe.forEach(i=>t.checked?S.checked.add(i.id):S.checked.delete(i.id));renderAll()}
+  else if(t.dataset.rule){S.rules[t.dataset.rule]=t.checked;renderAll()}
+});
+appEl.addEventListener('input',e=>{if(e.target.id==='cmt')S.text=e.target.value});
+document.addEventListener('click',e=>{if(e.target.closest('[data-reset]')){fresh();renderAll()}});
+document.addEventListener('keydown',e=>{
+  if(!inProto()||e.metaKey||e.ctrlKey||e.altKey) return;
+  const tg=e.target; if(tg&&(tg.tagName==='TEXTAREA'||tg.tagName==='INPUT'&&tg.type==='text')){if(e.key==='Escape'){S.compose=false;renderAll()}return}
+  if(S.rulesOpen){if(e.key==='Escape'){S.rulesOpen=false;renderAll()}return}
+  const k=e.key.toLowerCase(), i=get(S.sel);
+  if(k==='j'||k==='arrowdown'){e.preventDefault();move(1)}
+  else if(k==='k'||k==='arrowup'){e.preventDefault();move(-1)}
+  else if(!i||i.st!=='pending') return;
+  else if(k==='a'&&!i.q){const n=Object.values(i.ov).some(Boolean);if(!n)apply([i.id],'approved','Approved '+i.id+'. Merging now.')}
+  else if(k==='r'&&!i.q){e.preventDefault();S.compose=true;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}
+  else if(k==='e'&&!i.q){apply([i.id],'takeover','Opened '+i.id+' in your editor with the full session context.')}
+  else if(k==='x'&&groupOf(i)==='safe'){S.checked.has(i.id)?S.checked.delete(i.id):S.checked.add(i.id);renderAll()}
+  else if(k==='escape'){S.compose=false;renderAll()}
+});
+fresh(); renderAll();
+</script>
+</body>
+</html>

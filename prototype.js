@@ -132,7 +132,7 @@ function renderList(){
       h+=`<div class="rowwrap ${S.sel===i.id?'sel':''}">${safe?`<input type="checkbox" data-check="${i.id}" aria-label="Select ${esc(i.id)}" ${S.checked.has(i.id)?'checked':''}>`:''}
       <button class="row" type="button" data-act="select" data-id="${i.id}" aria-current="${S.sel===i.id}">
         <svg class="ico ri ${i.q?'ag':'pr'}"><use href="#i-${i.q?'agent':'pr'}"/></svg><span class="t">${esc(i.title)}</span>
-        <span class="m">${P.id?`<span class="id">${i.id}</span>`:''}${P.agent?`<span><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span>`:''}${P.lines&&!i.q?`<span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span>`:''}${P.age?`<span>${i.ago}</span>`:''}${P.risk?`<span class="pill ${rk.level}">${LABEL[rk.level]}</span>`:''}</span>
+        <span class="m">${P.id?`<span class="id">${i.id}</span>`:''}${P.agent?`<span class="who"><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span>`:''}${P.lines&&!i.q?`<span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span>`:''}${P.age?`<span>${i.ago}</span>`:''}${P.risk?`<span class="pill ${rk.level}">${LABEL[rk.level]}</span>`:''}</span>
       </button></div>`;
     });
   });
@@ -147,7 +147,7 @@ function renderDetail(){
   }
   const rk=risk(i), ovN=Object.keys(i.ov).filter(k=>i.ov[k]).length;
   let h=`<div class="dbody"><div class="dh"><span class="crumb"><svg class="ico"><use href="#i-${i.q?'agent':'pr'}"/></svg>Reviews<span>›</span><span class="id">${i.id}</span></span><h3>${esc(i.title)}</h3>
-    <div class="m"><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent} · ${esc(i.origin)} · ${i.ago} ago</div></div>`;
+    <div class="m"><span class="who"><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span> · ${esc(i.origin)} · ${i.ago} ago</div></div>`;
   h+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='high'?'Read this one. Two things need your eyes.':'Check the flagged item, then approve.'}</span></div>
     <details><summary>Why this rating</summary><ul>${rk.reasons.map(r=>`<li><span class="ic ${r.g?'g':'n'}">${r.g?'✓':'!'}</span>${esc(r.t)}</li>`).join('')}</ul></details></div>`;
   if(i.q){

@@ -367,3 +367,7 @@ html.full body{overflow:hidden;font-size:13px}
 .rst[disabled]{color:var(--faint);cursor:default}
 .rst[disabled] .ico{color:var(--faint)}
 .dfoot{margin:-4px -8px -6px}
+
+/* agent avatar centered on its name */
+.who{display:inline-flex;align-items:center;gap:5px;vertical-align:middle;line-height:1}
+.who .av{margin:0;vertical-align:0;flex:none}

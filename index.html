@@ -40,7 +40,7 @@
       <li><span>Output</span>A coding session works in the cloud and returns a draft pull request, with progress shown in a session on the issue.</li>
       <li><span>Reporting</span>Views filtered by Delegate and Insights by agent-session status describe agent work after it has happened.</li>
       <li><span>Reviews</span>Pull requests appear in a Reviews view, split into Created and To review, and can be grouped by status, author, repository, size or priority. Each one opens to an overview, a diff and a merge button. A connected provider can add a Risk score (Low, Typical, High or Very high risk, with optional explanations), and a Guide walks through the pull request as a story.</li>
-      <li><span>Linking</span>An issue links to a pull request through the issue ID in the branch name or title, or a closing keyword. In my workspace, pull requests show no linked issue.</li>
+      <li><span>Linking</span>An issue links to a pull request through the issue ID in the branch name or title, or a closing keyword. It works when the ID is there: in my test, Resolves showed the issue within seconds. Before that, none of the 17 pull requests in my workspace carried an ID, so none showed an issue. Linking depends on a naming habit that agents don’t reliably follow.</li>
       <li><span>Inbox</span>Priority inbox sorts notifications by source or by a filter you define.</li>
     </ul>
   </div>
@@ -48,12 +48,25 @@
   <div class="sec">
     <h2>Where it breaks</h2>
     <div class="grid2">
-      <div class="card"><span class="n">Generic</span><h3>Reviews is built for pull requests, not delegation</h3><p>A pull request an agent opens can sit under Created beside the code you wrote yourself, with nothing marking it as delegated work, or that it needs a different kind of read.</p></div>
-      <div class="card"><span class="n">Flat</span><h3>Risk is a label, not a way to work</h3><p>Reviews can group by status and size and show a provider-supplied risk score, but nothing ranks a queue by what needs a human or batches the safe results.</p></div>
-      <div class="card"><span class="n">Disconnected</span><h3>Intent and outcome never meet</h3><p>The overview shows the agent’s own summary and a list of files. The issue’s acceptance criteria are not on the page, and a pull request can show No issue at all. Guides explain what changed and why, not whether the issue’s acceptance criteria were met. Nothing shows which parts of the request the agent proved and which it guessed.</p></div>
+      <div class="card"><span class="n">Generic</span><h3>Reviews is built for pull requests, not delegation</h3><p>A pull request an agent opens can sit under Created beside the code you wrote yourself, with nothing marking it as delegated work, or that it needs a different kind of read. In my test, an agent-written pull request read “Opened by Sean Crisman” and sat in Ready to merge beside my own work.</p></div>
+      <div class="card"><span class="n">Flat</span><h3>Risk is a label, not a way to work</h3><p>Reviews can group by status and size and show a provider-supplied risk score, but nothing ranks a queue by what needs a human or batches the safe results. In my test, Reviews marked the pull request as quick to review because it was small, even though one of its criteria was unproven.</p></div>
+      <div class="card"><span class="n">Disconnected</span><h3>Intent and outcome never meet</h3><p>The overview shows the agent’s own summary and a list of files. The issue’s acceptance criteria are not on the page: even when the issue is linked, Resolves shows only its title. Guides explain what changed and why, not whether the issue’s acceptance criteria were met. Nothing shows which parts of the request the agent proved and which it guessed. The only criteria on my test page were the agent’s own table, grading itself.</p></div>
       <div class="card"><span class="n">Unscaled</span><h3>Every Loop multiplies the pile</h3><p>Reviewing results one at a time turns the human into the bottleneck, or into a rubber stamp. Both waste the agent.</p></div>
     </div>
-    <p class="note">These four come from my own workspace, checked against Linear’s docs on Nov 10, 2026. The first three are visible today. Where pull requests from Linear’s cloud coding agent and from Loops land is still to confirm. This is one workspace and one user, so I would test it with five reviewers, measuring time to decision.</p>
+    <p class="note">These four come from my own workspace, checked against Linear’s docs on Nov 10, 2026. The first three are visible today, and the test below confirms them on a real pull request. Where pull requests from Linear’s cloud coding agent and from Loops land is still to confirm: my workspace has no AI credits, so the Linear agent could not run. This is one workspace and one user, so I would test it with five reviewers, measuring time to decision.</p>
+  </div>
+
+  <div class="sec">
+    <h2>A real test</h2>
+    <p>To check these claims against real work, I wrote an issue for a small change to this prototype, with eight acceptance criteria. One of them, “looks like part of Linear’s dark theme”, is a judgment an agent can’t prove. Claude Code did the work and opened a pull request with the issue ID in its title. This is that pull request in my Reviews view.</p>
+    <figure class="evid"><img src="assets/reviews-test-sc-114.webp" width="2000" height="1078" loading="lazy" alt="Linear Reviews showing the test pull request. The sidebar says Checks: All passed and Resolves SC-114, the byline says Sean Crisman, and Squash and merge is the primary button."><figcaption class="note">The test pull request in my workspace’s Reviews view, Nov 10, 2026.</figcaption></figure>
+    <ul class="facts">
+      <li><span>Linked</span>Resolves shows the issue, but only its title. None of its eight acceptance criteria appear.</li>
+      <li><span>Unmarked</span>The byline and activity say I opened it. The only sign an agent wrote it is a line at the end of the description.</li>
+      <li><span>Self-graded</span>The criteria table on the page is the one the agent wrote. It marks the theme criterion Not proven, below the fold, and Reviews does nothing with that.</li>
+      <li><span>Green</span>The sidebar says Checks: All passed and Squash &amp; merge is the primary button. The only check was a preview deploy, so “All passed” meant “it deployed”, not that the issue’s criteria were met.</li>
+      <li><span>Unscored</span>No Risk score or Guide appeared. My workspace has no provider connected, which is what those need.</li>
+    </ul>
   </div>
 
   <div class="sec">
@@ -91,7 +104,7 @@
   </div>
 
   <div class="src">
-    <p><b>Sources</b></p><p>The Reviews view, as it appears in my own Linear workspace in November 2026. Linear documentation:</p>
+    <p><b>Sources</b></p><p>The Reviews view, as it appears in my own Linear workspace in November 2026, and the <a href="https://github.com/crismancodes/TRMdesignchallenge/pull/3" target="_blank" rel="noopener">test pull request</a>. Linear documentation:</p>
     <ul>
       <li><a href="https://linear.app/docs/agents-in-linear.md" target="_blank" rel="noopener">Agents in Linear</a></li>
       <li><a href="https://linear.app/docs/coding-sessions" target="_blank" rel="noopener">Coding sessions</a></li>

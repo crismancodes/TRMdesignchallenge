@@ -74,7 +74,7 @@
     <div class="grid2">
       <div class="card"><h3>Judgment goes where the evidence is</h3><p>Show the request and the proof for it side by side, in one place.</p></div>
       <div class="card"><h3>Rank by risk, not recency</h3><p>Start with what needs a human. Batch what does not.</p></div>
-      <div class="card"><h3>No is as cheap as yes</h3><p>Requesting changes or taking over is one key away, never a trip to another tool.</p></div>
+      <div class="card"><h3>Saying no costs the same as saying yes</h3><p>Requesting changes or taking over is one key away, never a trip to another tool.</p></div>
       <div class="card"><h3>Trust is a dial</h3><p>People set rules for what approves itself, preview what a rule would have done, and reverse it.</p></div>
     </div>
   </div>
@@ -86,6 +86,7 @@
       <li><span>Coverage</span>Share of agent results reviewed within one working day.</li>
       <li><span>Quality</span>Rework rate: results that came back with requested changes.</li>
       <li><span>Trust</span>Share approved by rule, and how often those are later reverted.</li>
+      <li><span>Counter</span>Approvals made without opening the evidence, and approvals later reverted.</li>
     </ul>
   </div>
 
@@ -165,6 +166,7 @@
     <div class="grid2">
       <div class="card"><h3>Auto-merge whatever passes CI</h3><p>It removes the human from work the human is still accountable for. Passing tests prove the code runs. They do not prove it does what the issue asked.</p></div>
       <div class="card"><h3>A chat summary of each run</h3><p>Prose is something a person has to re-verify. A row that pairs a claim with its proof can be scanned in a second.</p></div>
+      <div class="card"><h3>A saved view on Created</h3><p>The cheapest alternative, and it works today: a filter can sort and group agent pull requests. But it cannot join the issue’s acceptance criteria to the proof, so every result is still read one at a time, and nothing batches the safe ones. It gives up the evidence, which is the point of the concept.</p></div>
     </div>
   </div>
 
@@ -218,6 +220,30 @@
   </div>
 
   <div class="sec">
+    <h2>How the rating is computed</h2>
+    <p>Agent work reads the risk score Reviews already gets from a connected provider and adds one signal of its own: whether every acceptance criterion has evidence. The prototype stands in for both with the signals below.</p>
+    <div class="grid2" style="margin-top:14px">
+      <div class="scroll"><table class="tbl" style="min-width:0">
+        <thead><tr><th>Signal</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td>CI is failing</td><td>3</td></tr>
+          <tr><td>Touches a sensitive path</td><td>2</td></tr>
+          <tr><td>Includes a major version bump</td><td>1</td></tr>
+          <tr><td>Any acceptance criterion without evidence</td><td>1</td></tr>
+        </tbody></table></div>
+      <div class="scroll"><table class="tbl" style="min-width:0">
+        <thead><tr><th>Total</th><th>Rating</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td><span class="pill low">Low risk</span></td></tr>
+          <tr><td>1 to 2</td><td><span class="pill typ">Typical risk</span></td></tr>
+          <tr><td>3 to 4</td><td><span class="pill high">High risk</span></td></tr>
+          <tr><td>5 or more</td><td><span class="pill vhigh">Very high risk</span></td></tr>
+        </tbody></table></div>
+    </div>
+    <p class="note">The weights are illustrative. They would be tuned on revert and rework data.</p>
+  </div>
+
+  <div class="sec">
     <h2>For the team: principles for agent experiences</h2>
     <div class="two-col">
       <div class="card"><ul>
@@ -226,7 +252,7 @@
         <li><b>Rank by risk, not recency.</b> Attention is the scarce resource.</li>
       </ul></div>
       <div class="card"><ul>
-        <li><b>No costs the same as yes.</b> Disagreement is a normal path, not an escape hatch.</li>
+        <li><b>Saying no costs the same as saying yes.</b> Disagreement is a normal path, not an escape hatch.</li>
         <li><b>Trust is a dial.</b> Automation is opt-in, previewed and reversible.</li>
         <li><b>Explain every score.</b> A rating without reasons will be ignored.</li>
       </ul></div>
@@ -254,6 +280,7 @@
       <li><span>Open</span>How do we prevent a falsely safe rating from becoming a habit of not reading?</li>
       <li><span>Open</span>Who owns the review when the person who delegated is out?</li>
       <li><span>Open</span>Should agent pull requests still appear under Created, or move to Agent work only?</li>
+      <li><span>Open</span>Where do pull requests started by Loops land in Reviews?</li>
     </ul>
   </div>
 </div></section>

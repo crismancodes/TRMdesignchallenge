@@ -204,6 +204,11 @@ kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-b
   .dt{min-height:460px}
 }
 /* ---------- Linear skin ---------- */
+.seg .tb{border-radius:6px;padding:3px 10px;font-size:13px;color:var(--muted);font-weight:500;cursor:default}
+.seg .tb.on{background:var(--chip);color:var(--fg)}
+.seg .tb .cnt{color:var(--muted);margin-left:6px}
+.seg .tb.new{padding:0 6px;align-self:center;font-size:11px;color:var(--accent);background:var(--accent-soft);border-radius:4px;line-height:18px}
+.seg.f button{font-size:12px;padding:1px 8px}
 body{font-size:15px;letter-spacing:-.005em}
 h1{font-weight:600;letter-spacing:-.028em}
 h2{font-weight:600;letter-spacing:-.018em}
@@ -332,8 +337,8 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
 <!-- PROBLEM -->
 <section class="view" id="v-problem"><div class="wrap">
   <p class="eyebrow">Problem and direction</p>
-  <h1 class="wide">You are accountable for work you did not do, and Linear gives you no good place to check it.</h1>
-  <p class="lede">Linear lets you hand an issue to an agent and keeps you on the hook for the result. Loops go further and start agents automatically when issues arrive. Writing the code is no longer the slow part. Deciding whether to trust what came back is.</p>
+  <h1 class="wide">Linear now has a place to review agent work. It still can’t show you whether the agent did what you asked.</h1>
+  <p class="lede">Linear lets you hand an issue to an agent and keeps you on the hook for the result. Loops start agents automatically when issues arrive. Reviews brings the resulting pull requests into Linear, but it treats them like any other pull request: a summary, a diff and a merge button. Writing the code is no longer the slow part. Deciding whether to trust what came back is.</p>
 
   <div class="sec">
     <h2>What the product does today</h2>
@@ -342,6 +347,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
       <li><span>Automation</span>Loops can run agent behaviors, coding sessions included, each time an issue arrives in Triage.</li>
       <li><span>Output</span>A coding session works in the cloud and returns a draft pull request, with progress shown in a session on the issue.</li>
       <li><span>Reporting</span>Views filtered by Delegate and Insights by agent-session status describe agent work after it has happened.</li>
+      <li><span>Reviews</span>Pull requests appear in a Reviews view, split into Created and To review and grouped by state, such as Ready to merge. Each one opens to an overview, a diff and a merge button, with a Resolves field in the side panel for linking the issue.</li>
       <li><span>Inbox</span>Priority inbox sorts notifications by source or by a filter you define.</li>
     </ul>
   </div>
@@ -349,25 +355,25 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
   <div class="sec">
     <h2>Where it breaks</h2>
     <div class="grid2">
-      <div class="card"><span class="n">Scattered</span><h3>Review lives in three places</h3><p>A finished run leaves an inbox notification, a session on the issue and a pull request on GitHub. Judging one result means opening all three.</p></div>
-      <div class="card"><span class="n">Flat</span><h3>Inbox ranks by source, not risk</h3><p>A typo fix in docs and a change to a delivery worker arrive as the same kind of notification, in the order they finished.</p></div>
-      <div class="card"><span class="n">Disconnected</span><h3>Intent and outcome never meet</h3><p>The issue says what you wanted. The pull request shows what changed. Nothing shows which parts of the request the agent proved and which it guessed.</p></div>
+      <div class="card"><span class="n">Generic</span><h3>Reviews is built for pull requests, not delegation</h3><p>Work you handed to an agent lands under Created, next to code you wrote yourself. Nothing marks which pull requests came from a delegation or a Loop, or that they need a different kind of read.</p></div>
+      <div class="card"><span class="n">Flat</span><h3>Grouped by state, not risk</h3><p>A typo fix in the docs and a change to a delivery worker both sit under Ready to merge, sorted by age. Ready to merge says the checks passed. It does not say the work is right.</p></div>
+      <div class="card"><span class="n">Disconnected</span><h3>Intent and outcome never meet</h3><p>The overview shows the agent’s own summary and a list of files. The issue’s acceptance criteria are not on the page, and a pull request can show No issue at all. Nothing shows which parts of the request the agent proved and which it guessed.</p></div>
       <div class="card"><span class="n">Unscaled</span><h3>Every Loop multiplies the pile</h3><p>Reviewing results one at a time turns the human into the bottleneck, or into a rubber stamp. Both waste the agent.</p></div>
     </div>
-    <p class="note">These four come from how I use agents on my own issues. The first three can be checked against the docs above.</p>
+    <p class="note">These four come from how I use agents in my own workspace. The first three are visible in the Reviews view today.</p>
   </div>
 
   <div class="sec">
     <h2>The path to a decision</h2>
     <p class="plabel">Today</p>
-    <div class="path"><span class="st">Inbox ping</span><span class="ar">→</span><span class="st">Open issue</span><span class="ar">→</span><span class="st">Open agent session</span><span class="ar">→</span><span class="st">Open pull request on GitHub</span><span class="ar">→</span><span class="st">Read the diff</span><span class="ar">→</span><span class="st">Return to Linear</span><span class="ar">→</span><span class="st">Comment or close</span></div>
+    <div class="path"><span class="st">Open Reviews</span><span class="ar">→</span><span class="st">Pick a pull request by age</span><span class="ar">→</span><span class="st">Read the agent’s summary</span><span class="ar">→</span><span class="st">Open the issue to recall what you asked</span><span class="ar">→</span><span class="st">Read the diff for proof</span><span class="ar">→</span><span class="st">Merge or comment</span></div>
     <p class="plabel">Proposed</p>
-    <div class="path good"><span class="st">Open Review</span><span class="ar">→</span><span class="st">Read the evidence</span><span class="ar">→</span><span class="st">Decide</span></div>
+    <div class="path good"><span class="st">Open Reviews, Agent work</span><span class="ar">→</span><span class="st">Read the evidence</span><span class="ar">→</span><span class="st">Decide</span></div>
   </div>
 
   <div class="sec">
     <h2>Why it matters</h2>
-    <p>The value of delegation is capped by how cheaply a person can say yes or no. If review stays expensive, teams either stop delegating or start approving without reading. A faster agent makes this worse, because it produces results faster than anyone can judge them.</p>
+    <p>The value of delegation is capped by how cheaply a person can say yes or no. Reviews made the decision closer, but not cheaper: the reviewer still rebuilds the link between request and result by hand. If review stays expensive, teams either stop delegating or start approving without reading. A faster agent makes this worse, because it produces results faster than anyone can judge them.</p>
   </div>
 
   <div class="sec">
@@ -391,7 +397,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
   </div>
 
   <div class="src">
-    <p><b>Sources (Linear documentation)</b></p>
+    <p><b>Sources</b></p><p>The Reviews view, as it appears in my own Linear workspace in November 2026. Linear documentation:</p>
     <ul>
       <li><a href="https://linear.app/docs/agents-in-linear.md" target="_blank" rel="noopener">Agents in Linear</a></li>
       <li><a href="https://linear.app/docs/coding-sessions" target="_blank" rel="noopener">Coding sessions</a></li>
@@ -405,7 +411,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
 <section class="view" id="v-explore" hidden><div class="wrap">
   <p class="eyebrow">Explore and choose a direction</p>
   <h1>Three ways to make review cheap. One of them survives volume.</h1>
-  <p class="lede">I sketched each direction against the same seven sample results, then scored them against what the problem demands. The winner borrows the best part of the other two.</p>
+  <p class="lede">I sketched each direction against the same seven sample results, then scored them against what the problem demands. All three build on what Linear already ships. The winner borrows the best part of the other two.</p>
 
   <div class="sec grid3">
     <div class="card">
@@ -418,7 +424,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
       <h3>A. Smarter inbox</h3><p>Agent results become rich inbox rows with approve built in.</p>
       <span class="tag">Strengths</span><ul class="t"><li>No new surface to learn</li><li>Fastest to build</li></ul>
       <span class="tag">Weaknesses</span><ul class="t"><li>Chronological and mixed with mentions</li><li>No room for evidence</li><li>Batching is awkward</li></ul>
-      <p style="margin-top:12px"><span class="chip">Folded in: inbox row links into the queue</span></p>
+      <p style="margin-top:12px"><span class="chip">Folded in: inbox row links into Agent work</span></p>
     </div>
     <div class="card">
       <div class="wf" aria-hidden="true">
@@ -427,19 +433,19 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
         <div class="box"><div class="row"><i class="dotw"></i><span class="bar"></span></div><div class="row"><i class="dotw"></i><span class="bar"></span></div></div>
         <div class="row"><span class="bar s a"></span><span class="bar s"></span></div>
       </div>
-      <h3>B. Review tab on the issue</h3><p>Each issue gets an Agent review tab with the full evidence.</p>
-      <span class="tag">Strengths</span><ul class="t"><li>Richest context, where the request lives</li><li>Natural home for the evidence</li></ul>
-      <span class="tag">Weaknesses</span><ul class="t"><li>One at a time, so you open N issues</li><li>You must already know which to open</li></ul>
-      <p style="margin-top:12px"><span class="chip">Folded in: same review card on the issue</span></p>
+      <h3>B. Evidence on the pull request</h3><p>Each pull request opened in Reviews gets an evidence section on its overview, above the agent’s summary.</p>
+      <span class="tag">Strengths</span><ul class="t"><li>Lands on a page people already use</li><li>Natural home for the evidence</li></ul>
+      <span class="tag">Weaknesses</span><ul class="t"><li>Still one at a time, sorted by age</li><li>You must already know which to open</li></ul>
+      <p style="margin-top:12px"><span class="chip">Folded in: the evidence pane is this card</span></p>
     </div>
     <div class="card">
       <div class="wf two" aria-hidden="true">
         <div><span class="bar"></span><span class="bar a"></span><span class="bar"></span><span class="bar"></span></div>
         <div><span class="bar a" style="width:70%;flex:none"></span><div class="box"><span class="bar"></span><span class="bar"></span></div><div class="row"><span class="bar s a"></span><span class="bar s"></span></div></div>
       </div>
-      <h3>C. Review queue</h3><p>A dedicated view, ranked by risk, with evidence beside the list and batch actions.</p>
+      <h3>C. Agent work in Reviews</h3><p>A third tab in Reviews, beside Created and To review, ranked by risk, with evidence beside the list and batch actions.</p>
       <span class="tag">Strengths</span><ul class="t"><li>Scales with Loops</li><li>Evidence and decision in one pane</li><li>Safe results batch, risky ones get attention</li></ul>
-      <span class="tag">Weaknesses</span><ul class="t"><li>A new surface to learn</li><li>Risk rating must earn trust</li></ul>
+      <span class="tag">Weaknesses</span><ul class="t"><li>A second way to rank the same pull requests</li><li>Risk rating must earn trust</li></ul>
       <p style="margin-top:12px"><span class="chip win">Chosen</span></p>
     </div>
   </div>
@@ -452,10 +458,10 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
         <tr><td>Speed to a decision</td><td class="dots" aria-label="3 of 4">●●●○</td><td class="dots" aria-label="2 of 4">●●○○</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
         <tr><td>Holds up when Loops multiply results</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
         <tr><td>Room for evidence</td><td class="dots" aria-label="1 of 4">●○○○</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots c" aria-label="4 of 4">●●●●</td></tr>
-        <tr><td>Familiar to existing users</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots" aria-label="3 of 4">●●●○</td><td class="dots c" aria-label="2 of 4">●●○○</td></tr>
+        <tr><td>Familiar to existing users</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots c" aria-label="3 of 4">●●●○</td></tr>
         <tr><td>Cheap to build</td><td class="dots" aria-label="4 of 4">●●●●</td><td class="dots" aria-label="3 of 4">●●●○</td><td class="dots c" aria-label="2 of 4">●●○○</td></tr>
       </tbody></table></div>
-    <p class="note">My own judgment, meant to start a conversation. C loses on familiarity and cost, and wins on the two criteria the problem is about.</p>
+    <p class="note">My own judgment, meant to start a conversation. Because C extends Reviews instead of adding a surface, it costs little familiarity. It loses on build cost, and wins on the two criteria the problem is about.</p>
   </div>
 
   <div class="sec">
@@ -468,7 +474,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
 
   <div class="sec">
     <h2>Decision and risks</h2>
-    <p>I chose C and kept the useful part of A and B. The inbox row links into the queue and the issue shows the same review card, so there is one component and three places it appears. Two risks remain: a new surface needs a reason to exist beyond novelty, and a risk rating that people cannot explain will not be trusted. The prototype answers the second by showing the reasons behind every rating and a preview of what any rule would do.</p>
+    <p>I chose C and kept the useful part of A and B. The inbox row links into Agent work, and a pull request opened anywhere in Reviews shows the same evidence card, so there is one component and three places it appears. Two risks remain: a second ranking of the same pull requests can confuse people about where to look, and a risk rating that people cannot explain will not be trusted. The prototype answers the second by showing the reasons behind every rating and a preview of what any rule would do.</p>
   </div>
 </div></section>
 
@@ -476,7 +482,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
 <section class="view" id="v-prototype" hidden><div class="wrap">
   <p class="eyebrow">Build the experience</p>
   <h1 class="wide">Seven agent results. Clear the queue.</h1>
-  <p class="lede">A working prototype with sample data. Risk, grouping, batching and rules are computed from the data, so the behavior is real.</p>
+  <p class="lede">The Agent work tab in Reviews, as a working prototype with sample data. Risk, grouping, batching and rules are computed from the data, so the behavior is real.</p>
   <div class="tips" style="margin-top:20px">
     <span><kbd>J</kbd> <kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span>
     <button class="btn sm" data-reset type="button">Reset demo</button>
@@ -492,13 +498,13 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
 <!-- LEVERAGE -->
 <section class="view" id="v-leverage" hidden><div class="wrap">
   <p class="eyebrow">Create leverage</p>
-  <h1 class="wide">The queue is one use of five parts the whole product can reuse.</h1>
+  <h1 class="wide">Agent work is one use of five parts the whole product can reuse.</h1>
   <p class="lede">Every agent feature in Linear asks the same question: can a person tell what happened and decide quickly? These parts answer it once.</p>
 
   <div class="sec">
     <h2>For the product: components</h2>
     <div class="grid3">
-      <div class="card"><h3>Evidence row</h3><p>One claim, its proof, its status. Used by the queue, the issue and Triage Intelligence suggestions.</p>
+      <div class="card"><h3>Evidence row</h3><p>One claim, its proof, its status. Used by Agent work, any pull request in Reviews, and Triage Intelligence suggestions.</p>
         <ul class="crit mini" style="margin-top:12px"><li><span class="ic g">✓</span><div><div class="q">Covered by a new test</div><div class="e">digest.spec.ts line 42</div></div></li><li class="gap"><span class="ic n">!</span><div><div class="q">Works with no timezone set</div><div class="e">No evidence found</div></div></li></ul></div>
       <div class="card"><h3>Risk pill with reasons</h3><p>Never shown without the why. Rules, Insights and notifications can all read the same rating.</p>
         <div class="mini"><span class="pill low" style="width:max-content">Low risk</span><span class="pill med" style="width:max-content">Medium</span><span class="pill high" style="width:max-content">High</span></div></div>
@@ -509,7 +515,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
       <div class="card"><h3>Decision bar</h3><p>One primary action, one way to steer, one way out. Learn it once, use it in every review.</p>
         <div class="mini" style="display:flex;gap:8px;flex-wrap:wrap"><span class="btn pri sm">Approve</span><span class="btn sm">Request changes</span><span class="btn sm">Take over</span></div></div>
     </div>
-    <p class="note">Each part lands in three places: the queue, the issue and the inbox row. A change to one improves all three.</p>
+    <p class="note">Each part lands in three places: the Agent work tab, the pull request overview and the inbox row. A change to one improves all three.</p>
   </div>
 
   <div class="sec">
@@ -540,14 +546,15 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
   <div class="sec">
     <h2>Rollout and open questions</h2>
     <div class="grid3">
-      <div class="card phase"><b>Phase 1. Evidence, read only</b><span>Assemble criteria, assumptions and checks from existing session data. No new actions.</span></div>
-      <div class="card phase"><b>Phase 2. Queue and batching</b><span>Risk ranking, keyboard flow, batch approve for low-risk results.</span></div>
+      <div class="card phase"><b>Phase 1. Evidence on the pull request</b><span>Add criteria, assumptions and checks to the existing Reviews overview, built from session data. No new actions.</span></div>
+      <div class="card phase"><b>Phase 2. Agent work tab</b><span>Risk ranking, keyboard flow, batch approve for low-risk results.</span></div>
       <div class="card phase"><b>Phase 3. Rules</b><span>Opt-in auto-approve with preview and revert. Measure reverted approvals before widening.</span></div>
     </div>
     <ul class="facts" style="margin-top:18px">
       <li><span>Open</span>Which signals can Linear see reliably for a rating: paths touched, CI, dependency changes, criteria coverage?</li>
       <li><span>Open</span>How do we prevent a falsely safe rating from becoming a habit of not reading?</li>
       <li><span>Open</span>Who owns the review when the person who delegated is out?</li>
+      <li><span>Open</span>Should agent pull requests still appear under Created, or move to Agent work only?</li>
     </ul>
   </div>
 </div></section>
@@ -560,6 +567,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
   <div class="sec two-col">
     <div class="card"><h3>Where Claude worked</h3><ul>
       <li>Read Linear's current docs on agents, coding sessions, Triage Intelligence and Priority inbox, so the problem rests on what the product does today.</li>
+      <li>Sampled colors, type and layout from screenshots of my workspace, so the prototype matches Linear's interface.</li>
       <li>Pressure-tested my problem statement and proposed breakpoints for me to check against my own use.</li>
       <li>Drafted the three directions and sketched each against the same seven sample results.</li>
       <li>Built the clickable prototype from a small data spec, including risk scoring, batching and rules.</li>
@@ -567,6 +575,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
     <div class="card"><h3>Where my judgment shaped it</h3><ul>
       <li>Choosing the product and the experience from my own daily use of agents.</li>
       <li>Deciding the problem is the cost of review, not the quality of the agent.</li>
+      <li>Reframing once I saw Reviews in my own workspace: the gap is not a place to review, it is the evidence missing from that place.</li>
       <li>Cutting auto-merge and chat summaries, because accountability has to stay human.</li>
       <li>Keeping the primary action manual, with rules opt-in, previewed and reversible.</li>
       <li>Sequencing the rollout so evidence ships before automation.</li>
@@ -684,8 +693,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function pendingCount(){return ITEMS.filter(i=>i.st==='pending').length}
 function renderList(){
   const g=groups(), all=ordered();
-  let h=`<div class="lh"><div class="r"><b>Reviews<span class="cnt">${all.length}</span></b><button class="btn sm" data-act="rules" type="button"><svg class="ico"><use href="#i-rules"/></svg>Review rules</button></div>
-  <div class="seg" role="group" aria-label="Filter">${[['all','All'],['me','Delegated by me'],['loop','From Loops']].map(([k,l])=>`<button type="button" data-act="filter" data-v="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join('')}</div></div>`;
+  let h=`<div class="lh"><div class="r"><b>Reviews</b><button class="btn sm" data-act="rules" type="button"><svg class="ico"><use href="#i-rules"/></svg>Review rules</button></div>
+  <div class="seg"><span class="tb" title="Existing Linear tab, outside this prototype">Created</span><span class="tb" title="Existing Linear tab, outside this prototype">To review</span><span class="tb on">Agent work<span class="cnt">${all.length}</span></span><span class="tb new">New</span></div>
+  <div class="seg f" role="group" aria-label="Filter">${[['all','All'],['me','Delegated by me'],['loop','From Loops']].map(([k,l])=>`<button type="button" data-act="filter" data-v="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join('')}</div></div>`;
   if(!all.length) h+=`<div class="empty"><p>Nothing waiting in this view.</p></div>`;
   GROUPS.forEach(({k,l})=>{
     if(!g[k].length) return;

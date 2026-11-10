@@ -172,7 +172,7 @@ const isDefD=()=>JSON.stringify(S.d)===JSON.stringify(defD());
 function fresh(){
   ITEMS.forEach(i=>{i.st='pending';i.ov={}});
   PRS.forEach(p=>{p.st='open';if(p.status0)p.status=p.status0;else p.status0=p.status});
-  S={sel:null,tab:'agent',prSel:{created:null,review:null},checked:new Set(),f:defF(),d:defD(),menu:null,sub:null,compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
+  S={sel:null,tab:'agent',prSel:{created:null,review:null},checked:new Set(),f:defF(),d:defD(),menu:null,sub:null,compose:false,text:'',rulesOpen:false,help:false,helpFrom:null,open:{},toast:null,undo:null,tt:null,
      rules:{tests:true,docs:true,small:false,deps:false,sens:false,evid:false}};
   S.sel=(ordered()[0]||{}).id||null;
   ['created','review'].forEach(t=>S.prSel[t]=(prRows(t)[0]||{}).id||null);
@@ -408,6 +408,13 @@ function renderDetail(){
   if(!i.q) side+=sf('Branch',`${IC('pr','okc')}Up to date with main`)+filesBlock(i.files,i.id,`<span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span>`);
   return h+`<div class="dwrap"><div class="dmain">${main}</div><aside class="dside" aria-label="Details">${side}</aside></div>`;
 }
+const SHORTCUTS=[[['J','K'],'Move through the queue'],[['A'],'Approve'],[['R'],'Request changes'],[['X'],'Select a safe result for batch approval'],[['E'],'Take over'],[['F'],'Filter'],[['Shift','V'],'Display options'],[['?'],'Show keyboard shortcuts'],[['Esc'],'Close a menu or dialog']];
+function renderHelp(){
+  return `<div class="modal" data-act="helpbg"><div class="mbox keysdlg" role="dialog" aria-modal="true" aria-labelledby="khd">
+    <div class="kh"><h3 id="khd">Keyboard shortcuts</h3><button class="btn sm" type="button" data-act="helpclose">Close</button></div>
+    <dl class="kl">${SHORTCUTS.map(([ks,d])=>`<div><dt>${ks.map(k=>`<kbd>${k}</kbd>`).join('')}</dt><dd>${d}</dd></div>`).join('')}</dl>
+    <p>Filter and display options work in Agent work.</p></div></div>`;
+}
 function renderRules(){
   const m=matches(), risky=m.filter(i=>risk(i).score>0);
   return `<div class="modal" data-act="rulesbg"><div class="mbox" role="dialog" aria-label="Review rules">
@@ -436,11 +443,12 @@ function focusEl(sel){
 function renderAll(){
   const app=document.getElementById('app'), fd=focusDesc(), want=S.focusTo; S.focusTo=null;
   const ls=app.querySelector('.ls'), dt=app.querySelector('.dt'); const sl=ls?ls.scrollTop:0, sd=dt&&dt.dataset.sel===S.sel?dt.scrollTop:0;
-  app.innerHTML=`<aside class="sb"><div class="sbn" aria-hidden="true"><div class="tbar"><span class="ib"><svg class="ico"><use href="#i-sidebar"/></svg></span><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-clock"/></svg></span><span class="ib"><svg class="ico"><use href="#i-chevl"/></svg></span><span class="ib dim"><svg class="ico"><use href="#i-chevr"/></svg></span></div><div class="ws"><span class="wsa">AE</span>Acme Eng<svg class="ico chev"><use href="#i-chevd"/></svg><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><svg class="ico tmi"><use href="#i-team"/></svg><span>Engineering<i class="car"></i></span></div><div class="nv sub"><svg class="ico"><use href="#i-home"/></svg><span>Home</span></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="sbh">Try</div><div class="nv"><svg class="ico"><use href="#i-plus"/></svg><span>Invite people</span></div><div class="nv"><svg class="ico"><use href="#i-initiatives"/></svg><span>Initiatives</span></div><div class="nv"><svg class="ico"><use href="#i-cycles"/></svg><span>Cycles</span></div></div><div class="sbf"><div class="keys"><span><kbd>J</kbd><kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span><span><kbd>F</kbd> filter</span></div><div class="acts"><svg class="ico lmark" aria-hidden="true"><use href="#i-linear"/></svg><a class="btn sm" href="index.html#prototype">← Case study</a><button class="btn sm" data-reset type="button">Reset demo</button></div></div></aside>
+  app.innerHTML=`<aside class="sb"><div class="sbn" aria-hidden="true"><div class="tbar"><span class="ib"><svg class="ico"><use href="#i-sidebar"/></svg></span><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-clock"/></svg></span><span class="ib"><svg class="ico"><use href="#i-chevl"/></svg></span><span class="ib dim"><svg class="ico"><use href="#i-chevr"/></svg></span></div><div class="ws"><span class="wsa">AE</span>Acme Eng<svg class="ico chev"><use href="#i-chevd"/></svg><span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><svg class="ico tmi"><use href="#i-team"/></svg><span>Engineering<i class="car"></i></span></div><div class="nv sub"><svg class="ico"><use href="#i-home"/></svg><span>Home</span></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="sbh">Try</div><div class="nv"><svg class="ico"><use href="#i-plus"/></svg><span>Invite people</span></div><div class="nv"><svg class="ico"><use href="#i-initiatives"/></svg><span>Initiatives</span></div><div class="nv"><svg class="ico"><use href="#i-cycles"/></svg><span>Cycles</span></div></div><div class="sbf"><div class="keys"><span><kbd>J</kbd><kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span><span><kbd>F</kbd> filter</span><span><kbd>?</kbd> all shortcuts</span></div><div class="acts"><svg class="ico lmark" aria-hidden="true"><use href="#i-linear"/></svg><a class="btn sm" href="index.html#prototype">← Case study</a><button class="btn sm" data-reset type="button">Reset demo</button></div></div></aside>
     <section class="ls" aria-label="Review queue">${renderList()}</section>
     <section class="dt" data-sel="${S.sel}" aria-label="Evidence">${renderDetail()}</section>
     ${S.menu?renderMenu():''}
     ${S.rulesOpen?renderRules():''}
+    ${S.help?renderHelp():''}
     ${S.notice?`<div class="toast" role="status"><span>${esc(S.notice)}</span></div>`:S.checked.size?`<div class="toast" role="status"><span>${S.checked.size} selected</span><button type="button" data-act="batch">Approve ${S.checked.size}</button></div>`:S.toast?`<div class="toast" role="status"><span>${esc(S.toast)}</span>${S.undo?'<button type="button" data-act="undo">Undo</button>':''}</div>`:''}`;
   const l2=app.querySelector('.ls'), d2=app.querySelector('.dt'); if(l2)l2.scrollTop=sl; if(d2)d2.scrollTop=sd;
   placeMenu();
@@ -478,10 +486,12 @@ function openMenu(m){
   S.menu=m;S.sub=m==='filter'?'source':null;S.focusTo=m==='filter'?'.pop.fm .mi':'#dgrp';renderAll();
 }
 function closeMenu(){const m=S.menu;S.menu=null;S.sub=null;S.focusTo=`[data-menu="${m}"]`;renderAll()}
+function openHelp(){S.helpFrom=focusDesc();S.help=true;S.focusTo='[data-act="helpclose"]';renderAll()}
+function closeHelp(){S.help=false;S.focusTo=S.helpFrom||'@row';S.helpFrom=null;renderAll()}
 function closeRules(){S.rulesOpen=false;S.focusTo='[data-act="rules"]';renderAll()}
 /* Tab stays inside an open menu or the rules dialog */
 function trapTab(e){
-  const box=document.querySelector(S.rulesOpen?'.mbox':'.pop.fm,.pop.dm'); if(!box) return;
+  const box=document.querySelector(S.help?'.keysdlg':S.rulesOpen?'.mbox':'.pop.fm,.pop.dm'); if(!box) return;
   const f=[...box.querySelectorAll('button:not([disabled]),input,select')]; if(!f.length) return;
   const i=f.indexOf(document.activeElement);
   e.preventDefault(); f[(i<0?0:(i+(e.shiftKey?-1:1)+f.length)%f.length)].focus();
@@ -514,6 +524,8 @@ appEl.addEventListener('click',e=>{
   if(S.notice){S.notice=null;clearTimeout(S.nt)}
   const a=t.dataset.act, id=t.dataset.id;
   if(a==='rulesbg'){if(e.target!==t)return;return closeRules()}
+  if(a==='helpbg'){if(e.target!==t)return;return closeHelp()}
+  if(a==='helpclose') return closeHelp();
   if(a==='tab'){S.tab=t.dataset.v;S.menu=null;S.compose=false;S.checked.clear();renderAll()}
   else if(a==='view'){S.view=t.dataset.v;renderAll()}
   else if(a==='diffx'){const k=t.dataset.key;S.open[k]=S.open[k]===false;renderAll()}
@@ -559,11 +571,17 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-reset]')){fresh
 document.addEventListener('keydown',e=>{
   if(!inProto()||e.metaKey||e.ctrlKey||e.altKey) return;
   const tg=e.target; if(tg&&(tg.tagName==='TEXTAREA'||tg.tagName==='INPUT'&&tg.type==='text')){if(e.key==='Escape'&&tg.id==='cmt'){S.compose=false;S.focusTo='[data-act="compose"]';renderAll()}return}
+  if(S.help){
+    if(e.key==='Escape'||e.key==='?'){e.preventDefault();return closeHelp()}
+    if(e.key==='Tab') trapTab(e);
+    return;
+  }
   if(S.rulesOpen||S.menu){
     if(e.key==='Escape'){e.preventDefault();return S.rulesOpen?closeRules():closeMenu()}
     if(e.key==='Tab') trapTab(e);
     return;
   }
+  if(e.key==='?'){e.preventDefault();if(S.notice){S.notice=null;clearTimeout(S.nt)}return openHelp()}
   const k=e.key.toLowerCase(), KEYS=['a','r','e','x','f'];
   if(S.notice&&k!=='shift'){S.notice=null;clearTimeout(S.nt)}
   if(k==='escape'){if(S.compose){S.compose=false;S.focusTo='[data-act="compose"]';renderAll()}return}

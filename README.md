@@ -24,6 +24,10 @@ The prototype runs from a small data spec (`ITEMS` at the top of `prototype.js`)
 | `R` | Request changes |
 | `X` | Select a safe result for batch approval |
 | `E` | Take over |
+| `F` | Filter |
+| `Shift` `V` | Display options |
+| `?` | Show keyboard shortcuts |
+| `Esc` | Close a menu or dialog |
 
 ## Run locally
 

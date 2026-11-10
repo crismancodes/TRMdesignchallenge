@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Three design explorations for reviewing agent work in Linear: a smarter inbox, evidence on the pull request, and Agent work in Reviews.">
+<title>Design Explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+.xp{padding-block:40px 24px;scroll-margin-top:64px}
+.xp-head{margin-bottom:18px}
+.xp-head h2{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.xp-head p{color:var(--muted);max-width:66ch}
+.xp-frame{max-width:1440px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px));}
+.xp-frame>div{border-radius:14px;border:1px solid var(--line);overflow:hidden}
+.xp-frame a{pointer-events:none}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topin">
+    <div class="brand"><div><b>Design Explorations</b><small>Three directions for reviewing agent work. Static mockups.</small></div></div>
+    <nav class="tabs" aria-label="Explorations">
+      <a href="index.html#explore">← Case study</a><a href="#a">A. Inbox</a><a href="#b">B. Pull request</a><a href="#c">C. Agent work</a>
+    </nav>
+  </div>
+</header>
+<main>
+
+  <section class="xp" id="a" aria-labelledby="a-h">
+    <div class="wrap xp-head"><h2 id="a-h">A. Smarter inbox</h2><p>Agent results become rich inbox rows with approve built in. Chronological, and mixed in with mentions and updates.</p></div>
+    <div class="xp-frame" inert>
+<div style="min-height: 900px; box-sizing: border-box; padding: 8px; display: flex; flex-wrap: wrap; background: #090909; color: #eeeef0; font-family: Inter, system-ui, sans-serif; font-size: 14px; line-height: 1.45">
+
+  <nav aria-label="Workspace" style="flex: 0 1 232px; padding: 8px 10px 16px 6px; display: flex; flex-direction: column; gap: 2px; box-sizing: border-box">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px 14px">
+      <span style="width: 22px; height: 22px; border-radius: 6px; background: #3b82c4; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">AE</span>
+      <b style="font-weight: 600; flex-grow: 1">Acme Eng</b>
+    </div>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; background: #232325; color: #eeeef0; text-decoration: none; font-weight: 500">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.25 9.25 3.9 3.6a1 1 0 0 1 .96-.72h6.28a1 1 0 0 1 .96.72l1.65 5.65v3a1.1 1.1 0 0 1-1.1 1.1H3.35a1.1 1.1 0 0 1-1.1-1.1z"></path><path d="M2.4 9.25h3.1l.9 1.5h3.2l.9-1.5h3.1"></path></svg>
+      <span style="flex-grow: 1">Inbox</span><span style="color: #8a8a8e; font-size: 12px">11</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="8" cy="8" r="5.75" stroke-dasharray="2.2 1.9"></circle><circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"></circle></svg>
+      <span>My issues</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="4.25" cy="3.75" r="1.6"></circle><circle cx="4.25" cy="12.25" r="1.6"></circle><circle cx="11.75" cy="12.25" r="1.6"></circle><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"></path><path d="M8.75 3 7.25 4.5 8.75 6"></path></svg>
+      <span style="flex-grow: 1">Reviews</span><span style="color: #8a8a8e; font-size: 12px">7</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M3.2 2.6 13.4 7.4a.66.66 0 0 1 0 1.2L3.2 13.4a.5.5 0 0 1-.68-.62L4.6 8 2.52 3.22a.5.5 0 0 1 .68-.62Z"></path><path d="M4.6 8h3.6"></path></svg>
+      <span>Agent</span>
+    </a>
+    <p style="margin: 18px 0 4px; padding: 0 8px; color: #8a8a8e; font-size: 12px; font-weight: 500">Workspace</p>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M8 1.9 13.5 5v6L8 14.1 2.5 11V5z"></path><path d="M2.6 5.1 8 8.1l5.4-3M8 8.1v5.9"></path></svg>
+      <span>Projects</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="5.25" cy="5.25" r="2.75"></circle><circle cx="10.75" cy="5.25" r="2.75"></circle><circle cx="5.25" cy="10.75" r="2.75"></circle><circle cx="10.75" cy="10.75" r="2.75"></circle></svg>
+      <span>Loops</span>
+    </a>
+    <p style="margin: 18px 0 4px; padding: 0 8px; color: #8a8a8e; font-size: 12px; font-weight: 500">Your teams</p>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <span style="width: 16px; height: 16px; border-radius: 4px; background: #1f3a2c; color: #4cb782; font-size: 10px; font-weight: 700; display: grid; place-items: center">E</span>
+      <span>Engineering</span>
+    </a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; min-height: 884px; display: flex; flex-wrap: wrap; background: #131313; border: 1px solid #232326; border-radius: 12px; overflow: hidden">
+
+    <section aria-label="Inbox" style="flex: 1 1 440px; min-width: 0; border-right: 1px solid #232326; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 10px">
+        <h1 style="margin: 0; font-size: 15px; font-weight: 600">Inbox</h1>
+        <div style="display: flex; gap: 4px">
+          <button type="button" aria-label="Filter" style="width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: #8a8a8e; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.5 4.25h11M4.5 8h7M6.5 11.75h3"></path></svg></button>
+          <button type="button" aria-label="Display options" style="width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: #8a8a8e; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.5 5h5.5M11 5h2.5M2.5 11h2M7.5 11h6"></path><circle cx="9.5" cy="5" r="1.5"></circle><circle cx="6" cy="11" r="1.5"></circle></svg></button>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; border-bottom: 1px solid #232326">
+        <button type="button" style="padding: 4px 10px; border-radius: 999px; border: 1px solid #232326; background: #232325; color: #eeeef0; font-size: 13px">All 11</button>
+        <button type="button" style="padding: 4px 10px; border-radius: 999px; border: 1px solid #232326; background: transparent; color: #c9c9cc; font-size: 13px">Agent results 6</button>
+        <button type="button" style="padding: 4px 10px; border-radius: 999px; border: 1px solid #232326; background: transparent; color: #c9c9cc; font-size: 13px">Mentions 3</button>
+        <button type="button" style="padding: 4px 10px; border-radius: 999px; border: 1px solid #232326; background: transparent; color: #c9c9cc; font-size: 13px">Updates 2</button>
+      </div>
+
+      <ul style="list-style: none; margin: 0; padding: 6px; display: flex; flex-direction: column; gap: 2px">
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px; background: #232325">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #2b2b2f; color: #eeeef0; font-size: 11px; font-weight: 700; display: grid; place-items: center">C</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><b style="flex-grow: 1; font-weight: 600">Add retry with backoff to webhook delivery</b><span style="color: #8a8a8e; font-size: 12px">6m</span></div>
+            <p style="margin: 0; color: #c9c9cc; font-size: 13px">Codex opened a draft pull request · <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8a8a8e">ENG-387</span></p>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+              <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2323; color: #f1a3a3; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #eb5757"></span>High</span>
+              <span style="font-size: 12px; color: #c9c9cc">2 of 4 criteria proven</span>
+              <span style="font-size: 12px; color: #8ac485">+107</span><span style="font-size: 12px; color: #e0908b">−11</span>
+              <span style="flex-grow: 1"></span>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Approve</button>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 12px">Review</button>
+            </div>
+          </div>
+        </li>
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #6b4a9e; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">M</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><span style="flex-grow: 1; color: #c9c9cc">Onboarding checklist redesign</span><span style="color: #8a8a8e; font-size: 12px">9m</span></div>
+            <p style="margin: 0; color: #8a8a8e; font-size: 13px">Maya mentioned you: Can you sign off on the empty-state copy?</p>
+          </div>
+        </li>
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #5e6ad2; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">L</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><b style="flex-grow: 1; font-weight: 600">Fix timezone off-by-one in the weekly digest email</b><span style="color: #8a8a8e; font-size: 12px">14m</span></div>
+            <p style="margin: 0; color: #c9c9cc; font-size: 13px">Linear Agent opened a draft pull request · <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8a8a8e">ENG-412</span></p>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+              <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2e22; color: #f2b27a; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f2994a"></span>Medium</span>
+              <span style="font-size: 12px; color: #c9c9cc">2 of 3 criteria proven</span>
+              <span style="flex-grow: 1"></span>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Approve</button>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Review</button>
+            </div>
+          </div>
+        </li>
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #2f6f5a; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">J</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><span style="flex-grow: 1; color: #c9c9cc">Flaky test in search indexer</span><span style="color: #8a8a8e; font-size: 12px">18m</span></div>
+            <p style="margin: 0; color: #8a8a8e; font-size: 13px">Jordan commented: Pushed a fix, can you rerun CI on your branch?</p>
+          </div>
+        </li>
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #5e6ad2; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">L</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><b style="flex-grow: 1; font-weight: 600">Bump date-fns from 3.6 to 4.1</b><span style="color: #8a8a8e; font-size: 12px">22m</span></div>
+            <p style="margin: 0; color: #c9c9cc; font-size: 13px">Loop: Dependency updates · <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8a8a8e">ENG-409</span></p>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+              <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2e22; color: #f2b27a; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f2994a"></span>Medium</span>
+              <span style="font-size: 12px; color: #c9c9cc">Major version bump</span>
+              <span style="flex-grow: 1"></span>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Approve</button>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Review</button>
+            </div>
+          </div>
+        </li>
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #5e6ad2; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">L</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><b style="flex-grow: 1; font-weight: 600">Migrate user.preferences JSON column to typed fields</b><span style="color: #8a8a8e; font-size: 12px">31m</span></div>
+            <p style="margin: 0; color: #c9c9cc; font-size: 13px">Linear Agent asked: Backfill in this pull request, or in a follow-up?</p>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+              <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #2c2f4f; color: #b3b9f5; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #8f97ef"></span>Question</span>
+              <span style="flex-grow: 1"></span>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">This pull request</button>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Follow-up</button>
+            </div>
+          </div>
+        </li>
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #8a5a2b; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">P</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><span style="flex-grow: 1; color: #c9c9cc">Audit log export</span><span style="color: #8a8a8e; font-size: 12px">36m</span></div>
+            <p style="margin: 0; color: #8a8a8e; font-size: 13px">Priya moved this to Done</p>
+          </div>
+        </li>
+        <li style="display: flex; gap: 10px; padding: 10px; border-radius: 8px">
+          <span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: #5e6ad2; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">L</span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+            <div style="display: flex; gap: 8px; align-items: baseline"><b style="flex-grow: 1; font-weight: 600">Update API rate-limit docs for /v2/search</b><span style="color: #8a8a8e; font-size: 12px">41m</span></div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+              <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #1f3a2c; color: #8fd4af; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #4cb782"></span>Low risk</span>
+              <span style="font-size: 12px; color: #c9c9cc">3 of 3 criteria proven</span>
+              <span style="flex-grow: 1"></span>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Approve</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-label="Selected notification" style="flex: 999 1 460px; min-width: 0; padding: 22px 28px 28px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; align-items: center; gap: 6px; color: #8a8a8e; font-size: 13px">
+        <span>Inbox</span><span aria-hidden="true">›</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">ENG-387</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <h2 style="margin: 0; font-size: 22px; font-weight: 620; letter-spacing: -0.01em">Add retry with backoff to webhook delivery</h2>
+        <p style="margin: 0; color: #8a8a8e; font-size: 13px">Codex · Delegated by you · 6m ago</p>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid #232326; border-radius: 8px; background: #1a1a1c">
+        <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2323; color: #f1a3a3; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #eb5757"></span>High</span>
+        <span style="color: #eeeef0">Touches the webhook delivery worker. 2 criteria have no evidence.</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h3 style="margin: 0; font-size: 14px; font-weight: 600">Criteria</h3>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px">
+          <li style="display: flex; gap: 8px; align-items: center"><span style="color: #4cb782">✓</span><span style="color: #c9c9cc">Backoff is exponential with jitter</span></li>
+          <li style="display: flex; gap: 8px; align-items: center"><span style="color: #4cb782">✓</span><span style="color: #c9c9cc">Existing deliveries are unaffected</span></li>
+          <li style="display: flex; gap: 8px; align-items: center"><span style="color: #f2994a">!</span><span style="color: #f2b27a">Failed deliveries retry up to 5 times</span></li>
+          <li style="display: flex; gap: 8px; align-items: center"><span style="color: #f2994a">!</span><span style="color: #f2b27a">Dead-letter after the final failure</span></li>
+        </ul>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px dashed #2f2f33; border-radius: 8px">
+        <p style="margin: 0; color: #8a8a8e; font-size: 13px">Evidence, assumptions and the diff live on the pull request.</p>
+        <a href="#" style="align-self: flex-start; color: #8f97ef; font-size: 13px; font-weight: 500; text-decoration: none">Open in Agent work →</a>
+      </div>
+
+      <div style="flex-grow: 1"></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 14px; border-top: 1px solid #232326">
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 13px; font-weight: 500">Approve and merge</button>
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 13px">Request changes</button>
+        <span style="flex-grow: 1"></span>
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 1px solid #2f2f33; background: transparent; color: #c9c9cc; font-size: 13px">Snooze</button>
+      </div>
+    </section>
+  </main>
+</div>
+    </div>
+  </section>
+
+  <section class="xp" id="b" aria-labelledby="b-h">
+    <div class="wrap xp-head"><h2 id="b-h">B. Evidence on the pull request</h2><p>Each pull request opened in Reviews gets an evidence section on its overview, above the agent’s summary. Still one at a time, sorted by age.</p></div>
+    <div class="xp-frame" inert>
+<div style="min-height: 900px; box-sizing: border-box; padding: 8px; display: flex; flex-wrap: wrap; background: #090909; color: #eeeef0; font-family: Inter, system-ui, sans-serif; font-size: 14px; line-height: 1.45">
+
+  <nav aria-label="Workspace" style="flex: 0 1 232px; padding: 8px 10px 16px 6px; display: flex; flex-direction: column; gap: 2px; box-sizing: border-box">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px 14px">
+      <span style="width: 22px; height: 22px; border-radius: 6px; background: #3b82c4; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">AE</span>
+      <b style="font-weight: 600; flex-grow: 1">Acme Eng</b>
+    </div>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.25 9.25 3.9 3.6a1 1 0 0 1 .96-.72h6.28a1 1 0 0 1 .96.72l1.65 5.65v3a1.1 1.1 0 0 1-1.1 1.1H3.35a1.1 1.1 0 0 1-1.1-1.1z"></path><path d="M2.4 9.25h3.1l.9 1.5h3.2l.9-1.5h3.1"></path></svg>
+      <span style="flex-grow: 1">Inbox</span><span style="color: #8a8a8e; font-size: 12px">3</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="8" cy="8" r="5.75" stroke-dasharray="2.2 1.9"></circle><circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"></circle></svg>
+      <span>My issues</span>
+    </a>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; background: #232325; color: #eeeef0; text-decoration: none; font-weight: 500">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="4.25" cy="3.75" r="1.6"></circle><circle cx="4.25" cy="12.25" r="1.6"></circle><circle cx="11.75" cy="12.25" r="1.6"></circle><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"></path><path d="M8.75 3 7.25 4.5 8.75 6"></path></svg>
+      <span style="flex-grow: 1">Reviews</span><span style="color: #8a8a8e; font-size: 12px">7</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M3.2 2.6 13.4 7.4a.66.66 0 0 1 0 1.2L3.2 13.4a.5.5 0 0 1-.68-.62L4.6 8 2.52 3.22a.5.5 0 0 1 .68-.62Z"></path><path d="M4.6 8h3.6"></path></svg>
+      <span>Agent</span>
+    </a>
+    <p style="margin: 18px 0 4px; padding: 0 8px; color: #8a8a8e; font-size: 12px; font-weight: 500">Workspace</p>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M8 1.9 13.5 5v6L8 14.1 2.5 11V5z"></path><path d="M2.6 5.1 8 8.1l5.4-3M8 8.1v5.9"></path></svg>
+      <span>Projects</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="5.25" cy="5.25" r="2.75"></circle><circle cx="10.75" cy="5.25" r="2.75"></circle><circle cx="5.25" cy="10.75" r="2.75"></circle><circle cx="10.75" cy="10.75" r="2.75"></circle></svg>
+      <span>Loops</span>
+    </a>
+    <p style="margin: 18px 0 4px; padding: 0 8px; color: #8a8a8e; font-size: 12px; font-weight: 500">Your teams</p>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <span style="width: 16px; height: 16px; border-radius: 4px; background: #1f3a2c; color: #4cb782; font-size: 10px; font-weight: 700; display: grid; place-items: center">E</span>
+      <span>Engineering</span>
+    </a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; min-height: 884px; display: flex; flex-wrap: wrap; background: #131313; border: 1px solid #232326; border-radius: 12px; overflow: hidden">
+
+    <article style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 18px 32px 0; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 6px; color: #8a8a8e; font-size: 13px">
+          <span>Reviews</span><span aria-hidden="true">›</span><span>Created</span><span aria-hidden="true">›</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">#1284</span>
+        </div>
+        <h1 style="margin: 0; font-size: 24px; font-weight: 640; letter-spacing: -0.015em">Add retry with backoff to webhook delivery</h1>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #8a8a8e; font-size: 13px">
+          <span style="padding: 1px 8px; border-radius: 999px; background: #232325; color: #c9c9cc; font-size: 12px">Draft</span>
+          <span>Codex wants to merge 3 commits into <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #c9c9cc">main</span> from <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #c9c9cc">codex/eng-387-webhook-retry</span></span>
+        </div>
+        <div role="tablist" aria-label="Pull request" style="display: flex; gap: 4px; border-bottom: 1px solid #232326; margin-top: 4px">
+          <button type="button" role="tab" aria-selected="true" style="padding: 8px 12px; border: 0; border-bottom: 2px solid #8f97ef; background: transparent; color: #eeeef0; font-size: 13px; font-weight: 500">Overview</button>
+          <button type="button" role="tab" aria-selected="false" style="padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #8a8a8e; font-size: 13px">Diff <span style="color: #8a8a8e">3</span></button>
+          <button type="button" role="tab" aria-selected="false" style="padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #8a8a8e; font-size: 13px">Checks <span style="color: #8a8a8e">4</span></button>
+          <button type="button" role="tab" aria-selected="false" style="padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #8a8a8e; font-size: 13px">Activity</button>
+        </div>
+      </div>
+
+      <div style="padding: 22px 32px 28px; display: flex; flex-direction: column; gap: 24px; flex-grow: 1">
+
+        <section aria-labelledby="ev-h" style="display: flex; flex-direction: column; gap: 14px; padding: 18px; border: 1px solid #2c2f4f; border-radius: 10px; background: #15162a">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <h2 id="ev-h" style="margin: 0; font-size: 15px; font-weight: 600; flex-grow: 1">Evidence</h2>
+            <span style="padding: 1px 7px; border-radius: 4px; background: rgba(94,106,210,.2); color: #b3b9f5; font-size: 11px; font-weight: 600">New</span>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: #131313; border: 1px solid #232326">
+            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2323; color: #f1a3a3; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #eb5757"></span>High</span>
+            <span>Read the delivery worker change. Two criteria have no evidence.</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: baseline; gap: 8px"><h3 style="margin: 0; font-size: 13px; font-weight: 600; flex-grow: 1">Intent and outcome</h3><span style="color: #8a8a8e; font-size: 12px">4 criteria from ENG-387</span></div>
+            <ul style="list-style: none; margin: 0; padding: 0; border: 1px solid #232326; border-radius: 8px; overflow: hidden; background: #131313">
+              <li style="display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #232326; background: rgba(242,153,74,.10)">
+                <span style="flex: none; width: 18px; height: 18px; border-radius: 50%; background: rgba(242,153,74,.2); color: #f2994a; font-size: 11px; font-weight: 700; display: grid; place-items: center">!</span>
+                <div><b style="font-weight: 600; display: block">Failed deliveries retry up to 5 times</b><span style="color: #f2b27a; font-size: 13px">Retry count is configurable. No test reaches the 5th attempt.</span></div>
+              </li>
+              <li style="display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #232326; background: rgba(242,153,74,.10)">
+                <span style="flex: none; width: 18px; height: 18px; border-radius: 50%; background: rgba(242,153,74,.2); color: #f2994a; font-size: 11px; font-weight: 700; display: grid; place-items: center">!</span>
+                <div><b style="font-weight: 600; display: block">Dead-letter after the final failure</b><span style="color: #f2b27a; font-size: 13px">No dead-letter path found in the diff</span></div>
+              </li>
+              <li style="display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #232326">
+                <span style="flex: none; width: 18px; height: 18px; border-radius: 50%; background: rgba(76,183,130,.16); color: #4cb782; font-size: 11px; font-weight: 700; display: grid; place-items: center">✓</span>
+                <div><b style="font-weight: 600; display: block">Backoff is exponential with jitter</b><span style="color: #8a8a8e; font-size: 13px">backoff.spec.ts checks the delay curve</span></div>
+              </li>
+              <li style="display: flex; gap: 12px; padding: 10px 14px">
+                <span style="flex: none; width: 18px; height: 18px; border-radius: 50%; background: rgba(76,183,130,.16); color: #4cb782; font-size: 11px; font-weight: 700; display: grid; place-items: center">✓</span>
+                <div><b style="font-weight: 600; display: block">Existing deliveries are unaffected</b><span style="color: #8a8a8e; font-size: 13px">Delivery tests unchanged and passing</span></div>
+              </li>
+            </ul>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h3 style="margin: 0; font-size: 13px; font-weight: 600">What the agent assumed</h3>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #232326; border-radius: 8px; background: #131313">
+              <span style="flex: 1 1 260px">Chose a 1 second base delay, doubling, capped at 5 minutes</span>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 12px">Keep</button>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Override</button>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #232326; border-radius: 8px; background: #131313">
+              <span style="flex: 1 1 260px">Treated 4xx responses as non-retryable, except 429</span>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 12px">Keep</button>
+              <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Override</button>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="sum-h" style="display: flex; flex-direction: column; gap: 8px">
+          <h2 id="sum-h" style="margin: 0; font-size: 15px; font-weight: 600">Summary</h2>
+          <p style="margin: 0; color: #c9c9cc; max-width: 70ch">Adds retry with exponential backoff and jitter to the webhook delivery worker. Retries are configurable and default to 5 attempts. Introduces a nextDelay helper in workers/backoff.ts with unit tests for the delay curve.</p>
+          <p style="margin: 0; color: #8a8a8e; font-size: 12px">Written by Codex</p>
+        </section>
+
+        <section aria-labelledby="files-h" style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; gap: 8px"><h2 id="files-h" style="margin: 0; font-size: 15px; font-weight: 600; flex-grow: 1">Files changed</h2><span style="color: #8ac485; font-size: 13px">+107</span><span style="color: #e0908b; font-size: 13px">−11</span></div>
+          <ul style="list-style: none; margin: 0; padding: 0; border: 1px solid #232326; border-radius: 8px; overflow: hidden; font-family: 'JetBrains Mono', monospace; font-size: 12.5px">
+            <li style="display: flex; gap: 10px; padding: 9px 14px; border-bottom: 1px solid #232326"><span style="flex-grow: 1">workers/webhook-delivery.ts</span><span style="color: #8ac485">+71</span><span style="color: #e0908b">−9</span></li>
+            <li style="display: flex; gap: 10px; padding: 9px 14px; border-bottom: 1px solid #232326"><span style="flex-grow: 1">workers/backoff.ts</span><span style="color: #8ac485">+22</span><span style="color: #e0908b">−0</span></li>
+            <li style="display: flex; gap: 10px; padding: 9px 14px"><span style="flex-grow: 1">workers/webhook-delivery.spec.ts</span><span style="color: #8ac485">+14</span><span style="color: #e0908b">−2</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 32px; border-top: 1px solid #232326">
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 13px; font-weight: 500">Ready for review</button>
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 13px">Request changes</button>
+        <span style="flex-grow: 1"></span>
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 1px solid #2f2f33; background: transparent; color: #c9c9cc; font-size: 13px">Take over</button>
+      </div>
+    </article>
+
+    <aside aria-label="Details" style="flex: 1 1 260px; min-width: 0; border-left: 1px solid #232326; padding: 20px 18px; display: flex; flex-direction: column; gap: 16px; font-size: 13px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="color: #8a8a8e; font-size: 12px">Resolves</span>
+        <a href="#" style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; background: #1a1a1c; color: #eeeef0; text-decoration: none">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8a8a8e">ENG-387</span><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Retry webhook delivery</span>
+        </a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="color: #8a8a8e; font-size: 12px">Delegated</span>
+        <span>By you to Codex</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="color: #8a8a8e; font-size: 12px">Reviewers</span>
+        <span>You</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="color: #8a8a8e; font-size: 12px">Checks</span>
+        <span style="color: #4cb782">CI 4 of 4 passing</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="color: #8a8a8e; font-size: 12px">Labels</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="padding: 1px 8px; border-radius: 999px; border: 1px solid #2f2f33; color: #c9c9cc; font-size: 12px">Feature</span><span style="padding: 1px 8px; border-radius: 999px; border: 1px solid #2f2f33; color: #c9c9cc; font-size: 12px">Workers</span></div>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid #232326">
+        <span style="color: #8a8a8e; font-size: 12px">Next in Created</span>
+        <a href="#" style="color: #c9c9cc; text-decoration: none">Fix timezone off-by-one in the weekly digest email</a>
+        <span style="color: #8a8a8e; font-size: 12px">Sorted by age</span>
+      </div>
+    </aside>
+  </main>
+</div>
+    </div>
+  </section>
+
+  <section class="xp" id="c" aria-labelledby="c-h">
+    <div class="wrap xp-head"><h2 id="c-h">C. Agent work in Reviews <span class="chip win">Chosen</span></h2><p>A third tab in Reviews, ranked by risk, with evidence beside the list and batch actions for safe results. The chosen direction.</p></div>
+    <div class="xp-frame" inert>
+<div style="min-height: 900px; box-sizing: border-box; padding: 8px; display: flex; flex-wrap: wrap; background: #090909; color: #eeeef0; font-family: Inter, system-ui, sans-serif; font-size: 14px; line-height: 1.45">
+
+  <nav aria-label="Workspace" style="flex: 0 1 232px; padding: 8px 10px 16px 6px; display: flex; flex-direction: column; gap: 2px; box-sizing: border-box">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px 14px">
+      <span style="width: 22px; height: 22px; border-radius: 6px; background: #3b82c4; color: #ffffff; font-size: 11px; font-weight: 700; display: grid; place-items: center">AE</span>
+      <b style="font-weight: 600; flex-grow: 1">Acme Eng</b>
+    </div>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.25 9.25 3.9 3.6a1 1 0 0 1 .96-.72h6.28a1 1 0 0 1 .96.72l1.65 5.65v3a1.1 1.1 0 0 1-1.1 1.1H3.35a1.1 1.1 0 0 1-1.1-1.1z"></path><path d="M2.4 9.25h3.1l.9 1.5h3.2l.9-1.5h3.1"></path></svg>
+      <span style="flex-grow: 1">Inbox</span><span style="color: #8a8a8e; font-size: 12px">3</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="8" cy="8" r="5.75" stroke-dasharray="2.2 1.9"></circle><circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"></circle></svg>
+      <span>My issues</span>
+    </a>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; background: #232325; color: #eeeef0; text-decoration: none; font-weight: 500">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="4.25" cy="3.75" r="1.6"></circle><circle cx="4.25" cy="12.25" r="1.6"></circle><circle cx="11.75" cy="12.25" r="1.6"></circle><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"></path><path d="M8.75 3 7.25 4.5 8.75 6"></path></svg>
+      <span style="flex-grow: 1">Reviews</span><span style="color: #8a8a8e; font-size: 12px">7</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M3.2 2.6 13.4 7.4a.66.66 0 0 1 0 1.2L3.2 13.4a.5.5 0 0 1-.68-.62L4.6 8 2.52 3.22a.5.5 0 0 1 .68-.62Z"></path><path d="M4.6 8h3.6"></path></svg>
+      <span>Agent</span>
+    </a>
+    <p style="margin: 18px 0 4px; padding: 0 8px; color: #8a8a8e; font-size: 12px; font-weight: 500">Workspace</p>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M8 1.9 13.5 5v6L8 14.1 2.5 11V5z"></path><path d="M2.6 5.1 8 8.1l5.4-3M8 8.1v5.9"></path></svg>
+      <span>Projects</span>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="5.25" cy="5.25" r="2.75"></circle><circle cx="10.75" cy="5.25" r="2.75"></circle><circle cx="5.25" cy="10.75" r="2.75"></circle><circle cx="10.75" cy="10.75" r="2.75"></circle></svg>
+      <span>Loops</span>
+    </a>
+    <p style="margin: 18px 0 4px; padding: 0 8px; color: #8a8a8e; font-size: 12px; font-weight: 500">Your teams</p>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; color: #c9c9cc; text-decoration: none">
+      <span style="width: 16px; height: 16px; border-radius: 4px; background: #1f3a2c; color: #4cb782; font-size: 10px; font-weight: 700; display: grid; place-items: center">E</span>
+      <span>Engineering</span>
+    </a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; min-height: 884px; display: flex; flex-wrap: wrap; background: #131313; border: 1px solid #232326; border-radius: 12px; overflow: hidden">
+
+    <section aria-label="Agent work queue" style="flex: 1 1 420px; min-width: 0; border-right: 1px solid #232326; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px">
+        <h1 style="margin: 0; font-size: 15px; font-weight: 600">Reviews</h1>
+        <div style="display: flex; gap: 4px">
+          <button type="button" aria-label="Review rules" style="width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: #8a8a8e; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M8.9 1.75 3.6 9h4l-.6 5.25L12.4 7h-4z"></path></svg></button>
+          <button type="button" aria-label="Filter" style="width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: #8a8a8e; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.5 4.25h11M4.5 8h7M6.5 11.75h3"></path></svg></button>
+          <button type="button" aria-label="Display options" style="width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: #8a8a8e; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2.5 5h5.5M11 5h2.5M2.5 11h2M7.5 11h6"></path><circle cx="9.5" cy="5" r="1.5"></circle><circle cx="6" cy="11" r="1.5"></circle></svg></button>
+        </div>
+      </div>
+      <div role="tablist" aria-label="Reviews" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0 16px 12px">
+        <button type="button" role="tab" aria-selected="false" style="padding: 4px 12px; border-radius: 999px; border: 1px solid #232326; background: transparent; color: #8a8a8e; font-size: 13px">Created</button>
+        <button type="button" role="tab" aria-selected="false" style="padding: 4px 12px; border-radius: 999px; border: 1px solid #232326; background: transparent; color: #8a8a8e; font-size: 13px">To review</button>
+        <button type="button" role="tab" aria-selected="true" style="padding: 4px 12px; border-radius: 999px; border: 1px solid #2f2f33; background: #232325; color: #eeeef0; font-size: 13px; font-weight: 500">Agent work <span style="color: #8a8a8e">7</span></button>
+        <span style="padding: 1px 7px; border-radius: 4px; background: rgba(94,106,210,.2); color: #b3b9f5; font-size: 11px; font-weight: 600">New</span>
+      </div>
+
+      <div style="padding: 0 6px 6px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1">
+        <div style="padding: 6px 10px; border-radius: 6px; background: #1a1a1c; color: #c9c9cc; font-size: 13px">Agent asked a question <span style="color: #8a8a8e">1</span></div>
+        <div style="display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px">
+          <span style="color: #8f97ef; padding-top: 2px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M3.2 2.6 13.4 7.4a.66.66 0 0 1 0 1.2L3.2 13.4a.5.5 0 0 1-.68-.62L4.6 8 2.52 3.22a.5.5 0 0 1 .68-.62Z"></path><path d="M4.6 8h3.6"></path></svg></span>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px"><span>Migrate user.preferences JSON column to typed fields</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8e"><span style="font-family: 'JetBrains Mono', monospace">ENG-416</span>Linear Agent<span>31m</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #2c2f4f; color: #b3b9f5"><span style="width: 6px; height: 6px; border-radius: 50%; background: #8f97ef"></span>Question</span></span></div>
+        </div>
+
+        <div style="padding: 6px 10px; border-radius: 6px; background: #1a1a1c; color: #c9c9cc; font-size: 13px">Needs a look <span style="color: #8a8a8e">3</span></div>
+        <div style="display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px">
+          <span style="color: #4cb782; padding-top: 2px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="4.25" cy="3.75" r="1.6"></circle><circle cx="4.25" cy="12.25" r="1.6"></circle><circle cx="11.75" cy="12.25" r="1.6"></circle><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"></path></svg></span>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px"><span>Add retry with backoff to webhook delivery</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8e"><span style="font-family: 'JetBrains Mono', monospace">ENG-387</span>Codex<span style="color: #8ac485">+107</span><span style="color: #e0908b">−11</span><span>6m</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2323; color: #f1a3a3"><span style="width: 6px; height: 6px; border-radius: 50%; background: #eb5757"></span>High</span></span></div>
+        </div>
+        <div style="display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px">
+          <span style="color: #4cb782; padding-top: 2px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="4.25" cy="3.75" r="1.6"></circle><circle cx="4.25" cy="12.25" r="1.6"></circle><circle cx="11.75" cy="12.25" r="1.6"></circle><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"></path></svg></span>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px"><span>Bump date-fns from 3.6 to 4.1</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8e"><span style="font-family: 'JetBrains Mono', monospace">ENG-409</span>Linear Agent<span style="color: #8ac485">+308</span><span style="color: #e0908b">−298</span><span>22m</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2e22; color: #f2b27a"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f2994a"></span>Medium</span></span></div>
+        </div>
+        <div style="display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #232325">
+          <span style="color: #4cb782; padding-top: 2px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="4.25" cy="3.75" r="1.6"></circle><circle cx="4.25" cy="12.25" r="1.6"></circle><circle cx="11.75" cy="12.25" r="1.6"></circle><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"></path></svg></span>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px"><span>Fix timezone off-by-one in the weekly digest email</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8e"><span style="font-family: 'JetBrains Mono', monospace">ENG-412</span>Linear Agent<span style="color: #8ac485">+22</span><span style="color: #e0908b">−4</span><span>14m</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2e22; color: #f2b27a"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f2994a"></span>Medium</span></span></div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; background: #1a1a1c; color: #c9c9cc; font-size: 13px"><span style="flex-grow: 1">Safe to approve <span style="color: #8a8a8e">3</span></span><label style="display: flex; align-items: center; gap: 6px; color: #8a8a8e"><input type="checkbox" checked="checked" style="accent-color: #5e6ad2">Select all</label></div>
+        <label style="display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(94,106,210,.08)">
+          <input type="checkbox" checked="checked" style="accent-color: #5e6ad2; margin-top: 3px">
+          <span style="min-width: 0; display: flex; flex-direction: column; gap: 4px"><span>Update API rate-limit docs for /v2/search</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8e"><span style="font-family: 'JetBrains Mono', monospace">ENG-398</span>Linear Agent<span style="color: #8ac485">+21</span><span style="color: #e0908b">−5</span><span>41m</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #1f3a2c; color: #8fd4af"><span style="width: 6px; height: 6px; border-radius: 50%; background: #4cb782"></span>Low risk</span></span></span>
+        </label>
+        <label style="display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(94,106,210,.08)">
+          <input type="checkbox" checked="checked" style="accent-color: #5e6ad2; margin-top: 3px">
+          <span style="min-width: 0; display: flex; flex-direction: column; gap: 4px"><span>Rename workspace to team in empty-state copy</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8e"><span style="font-family: 'JetBrains Mono', monospace">ENG-405</span>Cursor<span style="color: #8ac485">+12</span><span style="color: #e0908b">−12</span><span>52m</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #1f3a2c; color: #8fd4af"><span style="width: 6px; height: 6px; border-radius: 50%; background: #4cb782"></span>Low risk</span></span></span>
+        </label>
+        <label style="display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(94,106,210,.08)">
+          <input type="checkbox" checked="checked" style="accent-color: #5e6ad2; margin-top: 3px">
+          <span style="min-width: 0; display: flex; flex-direction: column; gap: 4px"><span>Remove unused feature flag new_sidebar_v1</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8e"><span style="font-family: 'JetBrains Mono', monospace">ENG-401</span>Cursor<span style="color: #8ac485">+0</span><span style="color: #e0908b">−58</span><span>1h</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #1f3a2c; color: #8fd4af"><span style="width: 6px; height: 6px; border-radius: 50%; background: #4cb782"></span>Low risk</span></span></span>
+        </label>
+      </div>
+
+      <div style="margin: 0 10px 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid #2f2f33; background: #1c1c1f">
+        <span style="flex-grow: 1; font-size: 13px">3 selected · every one passes your rules</span>
+        <button type="button" style="padding: 5px 12px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 13px; font-weight: 500">Approve 3</button>
+      </div>
+    </section>
+
+    <section aria-label="Evidence" style="flex: 999 1 500px; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 20px 30px 26px; display: flex; flex-direction: column; gap: 20px; flex-grow: 1">
+        <div style="display: flex; align-items: center; gap: 6px; color: #8a8a8e; font-size: 13px"><span>Reviews</span><span aria-hidden="true">›</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">ENG-412</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h2 style="margin: 0; font-size: 24px; font-weight: 640; letter-spacing: -0.015em">Fix timezone off-by-one in the weekly digest email</h2>
+          <p style="margin: 0; color: #8a8a8e; font-size: 13px">Linear Agent · Delegated by you · 14m ago</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid #232326; border-radius: 8px; background: #1a1a1c">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; border: 1px solid #3a2e22; color: #f2b27a; font-size: 12px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f2994a"></span>Medium</span>
+            <span>Check the flagged item, then approve.</span>
+          </div>
+          <a href="#" style="color: #8f97ef; font-size: 13px; text-decoration: none">Why this rating</a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; gap: 8px"><h3 style="margin: 0; font-size: 14px; font-weight: 600; flex-grow: 1">Intent and outcome</h3><span style="color: #8a8a8e; font-size: 12px">3 criteria from the issue</span></div>
+          <ul style="list-style: none; margin: 0; padding: 0; border: 1px solid #232326; border-radius: 8px; overflow: hidden">
+            <li style="display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #232326">
+              <span style="flex: none; width: 18px; height: 18px; border-radius: 50%; background: rgba(76,183,130,.16); color: #4cb782; font-size: 11px; font-weight: 700; display: grid; place-items: center">✓</span>
+              <div><b style="font-weight: 600; display: block">Digest groups issues by the recipient’s local day</b><span style="color: #8a8a8e; font-size: 13px">New test covers UTC-8 and UTC+13</span></div>
+            </li>
+            <li style="display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #232326">
+              <span style="flex: none; width: 18px; height: 18px; border-radius: 50%; background: rgba(76,183,130,.16); color: #4cb782; font-size: 11px; font-weight: 700; display: grid; place-items: center">✓</span>
+              <div><b style="font-weight: 600; display: block">Send time is unchanged</b><span style="color: #8a8a8e; font-size: 13px">Scheduler untouched, 0 lines changed</span></div>
+            </li>
+            <li style="display: flex; gap: 12px; padding: 10px 14px; background: rgba(242,153,74,.10)">
+              <span style="flex: none; width: 18px; height: 18px; border-radius: 50%; background: rgba(242,153,74,.2); color: #f2994a; font-size: 11px; font-weight: 700; display: grid; place-items: center">!</span>
+              <div><b style="font-weight: 600; display: block">Works when the user has no timezone set</b><span style="color: #f2b27a; font-size: 13px">No test for a missing timezone. Code falls back to UTC.</span></div>
+            </li>
+          </ul>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h3 style="margin: 0; font-size: 14px; font-weight: 600">What the agent assumed</h3>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #232326; border-radius: 8px">
+            <span style="flex: 1 1 260px">Used the saved timezone, not the browser’s, because digests render on the server</span>
+            <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 12px">Keep</button>
+            <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Override</button>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #232326; border-radius: 8px">
+            <span style="flex: 1 1 260px">Left the Week starts on setting alone</span>
+            <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 12px">Keep</button>
+            <button type="button" style="padding: 3px 10px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 12px">Override</button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; gap: 8px"><h3 style="margin: 0; font-size: 14px; font-weight: 600; flex-grow: 1">Changes</h3><span style="color: #8ac485; font-size: 13px">+22</span><span style="color: #e0908b; font-size: 13px">−4</span></div>
+          <ul style="list-style: none; margin: 0; padding: 0; border: 1px solid #232326; border-radius: 8px; overflow: hidden; font-family: 'JetBrains Mono', monospace; font-size: 12.5px">
+            <li style="display: flex; gap: 10px; padding: 9px 14px; border-bottom: 1px solid #232326"><span style="flex-grow: 1">src/digest/group-by-day.ts</span><span style="color: #8ac485">+11</span><span style="color: #e0908b">−3</span></li>
+            <li style="display: flex; gap: 10px; padding: 9px 14px"><span style="flex-grow: 1">src/digest/digest.spec.ts</span><span style="color: #8ac485">+11</span><span style="color: #e0908b">−1</span></li>
+          </ul>
+          <p style="margin: 4px 0 0; font-size: 13px"><span style="color: #4cb782">CI 4 of 4 passing</span><span style="color: #8a8a8e"> · No preview deployment</span></p>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 30px; border-top: 1px solid #232326">
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 0; background: #5e6ad2; color: #ffffff; font-size: 13px; font-weight: 500">Approve and merge <span style="opacity: .75; font-family: 'JetBrains Mono', monospace; font-size: 11px">A</span></button>
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 1px solid #2f2f33; background: #1a1a1c; color: #eeeef0; font-size: 13px">Request changes <span style="color: #8a8a8e; font-family: 'JetBrains Mono', monospace; font-size: 11px">R</span></button>
+        <span style="flex-grow: 1"></span>
+        <button type="button" style="padding: 7px 14px; border-radius: 6px; border: 1px solid #2f2f33; background: transparent; color: #c9c9cc; font-size: 13px">Take over <span style="color: #8a8a8e; font-family: 'JetBrains Mono', monospace; font-size: 11px">E</span></button>
+      </div>
+    </section>
+  </main>
+</div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

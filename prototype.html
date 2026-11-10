@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" class="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Agent work in Reviews: a working prototype for reviewing AI agent results by risk.">
+<title>Agent Work Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-linear" viewBox="0 0 100 100"><path fill="currentColor" d="M1.22541 61.5228c-.2225-.9485.90748-1.5459 1.59638-.857L39.3342 97.1782c.6889.6889.0915 1.8189-.857 1.5964C20.0515 94.4522 5.54779 79.9485 1.22541 61.5228ZM.00189135 46.8891c-.01764375.2833.08887215.5599.28957165.7606L52.3503 99.7085c.2007.2007.4773.3075.7606.2896 2.3692-.1476 4.6938-.46 6.9624-.9259.7645-.157 1.0301-1.0963.4782-1.6481L2.57595 39.4485c-.55186-.5519-1.49117-.2863-1.648174.4782-.465915 2.2686-.77832 4.5932-.92588465 6.9624ZM4.21093 29.7054c-.16649.3738-.08169.8106.20765 1.1l64.77602 64.776c.2894.2894.7262.3742 1.1.2077 1.7861-.7956 3.5171-1.6927 5.1855-2.684.5521-.328.6373-1.0867.1832-1.5407L8.43566 24.3367c-.45409-.4541-1.21271-.3689-1.54074.1832-.99132 1.6684-1.88843 3.3994-2.68399 5.1855ZM12.6587 18.074c-.3701-.3701-.393-.9637-.0443-1.3541C21.7795 6.45931 35.1114 0 49.9519 0 77.5927 0 100 22.4073 100 50.0481c0 14.8405-6.4593 28.1724-16.7199 37.3375-.3903.3487-.984.3258-1.3542-.0443L12.6587 18.074Z"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 16 16"><path d="M2.25 9.25 3.9 3.6a1 1 0 0 1 .96-.72h6.28a1 1 0 0 1 .96.72l1.65 5.65v3a1.1 1.1 0 0 1-1.1 1.1H3.35a1.1 1.1 0 0 1-1.1-1.1z"/><path d="M2.4 9.25h3.1l.9 1.5h3.2l.9-1.5h3.1"/></symbol>
+  <symbol id="i-my" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75" stroke-dasharray="2.2 1.9"/><circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pr" viewBox="0 0 16 16"><circle cx="4.25" cy="3.75" r="1.6"/><circle cx="4.25" cy="12.25" r="1.6"/><circle cx="11.75" cy="12.25" r="1.6"/><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"/><path d="M8.75 3 7.25 4.5 8.75 6"/></symbol>
+  <symbol id="i-agent" viewBox="0 0 16 16"><path d="M3.2 2.6 13.4 7.4a.66.66 0 0 1 0 1.2L3.2 13.4a.5.5 0 0 1-.68-.62L4.6 8 2.52 3.22a.5.5 0 0 1 .68-.62Z"/><path d="M4.6 8h3.6"/></symbol>
+  <symbol id="i-projects" viewBox="0 0 16 16"><path d="M8 1.9 13.5 5v6L8 14.1 2.5 11V5z"/><path d="M2.6 5.1 8 8.1l5.4-3M8 8.1v5.9"/></symbol>
+  <symbol id="i-views" viewBox="0 0 16 16"><path d="M8 2.2 14 5.4 8 8.6 2 5.4z"/><path d="m2 8.3 6 3.2 6-3.2M2 11.1l6 3.2 6-3.2"/></symbol>
+  <symbol id="i-loops" viewBox="0 0 16 16"><circle cx="5.25" cy="5.25" r="2.75"/><circle cx="10.75" cy="5.25" r="2.75"/><circle cx="5.25" cy="10.75" r="2.75"/><circle cx="10.75" cy="10.75" r="2.75"/></symbol>
+  <symbol id="i-more" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="8" r="1.1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.4 10.4 3.1 3.1"/></symbol>
+  <symbol id="i-compose" viewBox="0 0 16 16"><path d="M13.2 8.5v3.9a1.3 1.3 0 0 1-1.3 1.3H3.6a1.3 1.3 0 0 1-1.3-1.3V4.1a1.3 1.3 0 0 1 1.3-1.3h3.9"/><path d="m11.6 2.2 2.2 2.2-5.9 5.9-2.7.5.5-2.7z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 16 16"><path d="M2.75 7.2 8 2.75l5.25 4.45v5.9a.9.9 0 0 1-.9.9H9.6V10.3H6.4V14H3.65a.9.9 0 0 1-.9-.9z"/></symbol>
+  <symbol id="i-issues" viewBox="0 0 16 16"><rect x="5.25" y="2.25" width="8.5" height="8.5" rx="2"/><path d="M10.75 13.1a1.6 1.6 0 0 1-1.6 1.15H4.25a2 2 0 0 1-2-2V7.35a1.6 1.6 0 0 1 1.15-1.6"/></symbol>
+  <symbol id="i-triage" viewBox="0 0 16 16"><path d="M2.5 3h11L9.4 8.2v4.3l-2.8 1.4V8.2z"/></symbol>
+  <symbol id="i-rules" viewBox="0 0 16 16"><path d="M2.5 4.5h6M11.5 4.5h2M2.5 11.5h2M7.5 11.5h6"/><circle cx="10" cy="4.5" r="1.5"/><circle cx="6" cy="11.5" r="1.5"/></symbol>
+</svg>
+<div id="app" class="app full" aria-live="polite"></div>
+<script src="prototype.js"></script>
+</body>
+</html>

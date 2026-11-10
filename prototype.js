@@ -249,27 +249,64 @@ function renderPRList(){
   });
   return h;
 }
+/* ---------- details pane: Linear's pull request layout (header, body, sidebar) ---------- */
+const REPO='acme/web';
+const prNumOf=i=>{const p=PRS.find(x=>x.ref===i.id);return p?p.id:String(1860+ITEMS.indexOf(i))};
+const FILE_GROUPS=[['impl','Implementation'],['tests','Tests'],['deps','Build & dependencies'],['docs','Documentation']];
+const fileGroup=n=>/(spec|test)\./.test(n)?'tests':/(package\.json|lock\.yaml|eslint)/.test(n)?'deps':/(^docs\/|\.mdx?$)/.test(n)?'docs':'impl';
+const IC=(n,c='')=>`<svg class="ico ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const sf=(label,val,isNew)=>`<div class="sf"><div class="sl">${label}${isNew?'<span class="nw">New</span>':''}</div><div class="sv">${val}</div></div>`;
+function syncView(){const cur=S.tab+':'+(S.tab==='agent'?S.sel:S.prSel[S.tab]);if(S.viewFor!==cur){S.view='overview';S.viewFor=cur}}
+function viewTabs(noDiff){return `<div class="seg vt" role="tablist" aria-label="View">${[['overview','Overview'],['diff','Diff']].map(([v,l])=>`<button type="button" role="tab" class="tb${S.view===v?' on':''}" data-act="view" data-v="${v}" aria-selected="${S.view===v}"${noDiff&&v==='diff'?' disabled':''}>${l}</button>`).join('')}</div>`}
+function dTop(o){
+  return `<div class="dtop"><div class="dr1"><span class="bc">${o.crumb}<span class="sep" aria-hidden="true">›</span>${IC(o.icon,o.iconC)}<b>${esc(o.title)}</b>${o.a!=null?`<span class="da">+${o.a}</span><span class="dd">−${o.d}</span>`:''}${IC('star','fa')}${IC('more','fa')}</span>
+    <span class="sp"></span>${o.ref?`<span class="ref">${IC('pr')}${o.ref}</span>`:''}<span class="ib" aria-hidden="true">${IC('link')}</span><span class="ib" aria-hidden="true">${IC('expand')}</span></div>
+    <div class="dr2">${viewTabs(o.noDiff)}<span class="sp"></span>${o.actions}</div></div>`;
+}
+function filesBlock(files,key,total){
+  const gs=FILE_GROUPS.map(([k,l])=>({k,l,f:files.filter(f=>fileGroup(f.n)===k)})).filter(g=>g.f.length);
+  return `<div class="sf"><div class="sl">${files.length} file${files.length>1?'s':''} changed${total?`<span class="tot">${total}</span>`:''}</div>${gs.map(g=>{
+    const gk=key+':g:'+g.k, open=!!S.open[gk], hasN=g.f.every(f=>f.a!=null);
+    const a=hasN?g.f.reduce((n,f)=>n+f.a,0):null, d=hasN?g.f.reduce((n,f)=>n+f.d,0):null;
+    return `<button class="fg" type="button" data-act="diff" data-key="${gk}" aria-expanded="${open}"><b>${g.l}</b><em>${g.f.length}</em><i class="car${open?' open':''}"></i><span class="sp"></span>${hasN?`<span class="da">+${a}</span>${d?` <span class="dd">−${d}</span>`:''}`:''}</button>${open?`<ul class="fl">${g.f.map(f=>{const parts=f.n.split('/'),nm=parts.pop();return `<li>${IC('issues')}<span>${esc(nm)}</span><em>${esc(parts.join('/'))}</em></li>`}).join('')}</ul>`:''}`}).join('')}</div>`;
+}
+function diffView(files,key){
+  return `<div class="dsec"><ul class="files">${files.map((f,k)=>{const fk=key+':'+k, open=f.diff&&S.open[fk]!==false;
+    return `<li><div class="fr"><span>${esc(f.n)}${f.a!=null?` <span class="da">+${f.a}</span> <span class="dd">−${f.d}</span>`:''}</span>${f.diff?`<button type="button" data-act="diffx" data-key="${fk}">${open?'Collapse':'Expand'}</button>`:'<em class="nd">Not loaded in this prototype</em>'}</div>${open?`<div class="diff">${f.diff.map(l=>`<div class="${l[0]==='+'?'a':'d'}">${esc(l)}</div>`).join('')}</div>`:''}</li>`}).join('')}</ul></div>`;
+}
+const checksVal=(txt,ok)=>txt==='No pull request yet'?`<span class="mut">No pull request yet</span>`:ok?`${IC('checks','okc')}All passed`:`${IC('checks','badc')}<span class="badc">${esc(txt.replace(/^CI /,''))}</span>`;
+const avatar=(name,cls='')=>`<span class="who"><span class="av${name==='Linear Agent'?' la':AGENTS.has(name)?'':' hu'}${cls}">${initials(name)}</span>${esc(name)}</span>`;
+
 function renderPRDetail(){
   const p=prGet(S.prSel[S.tab]);
   if(!p||!prOpen(PRS.find(x=>x.id===p.id))) return `<div class="empty"><h3>Select a pull request</h3><p>Pick one from the list to see it.</p></div>`;
-  let h=`<div class="dbody"><div class="dh"><span class="crumb"><svg class="ico"><use href="#i-pr"/></svg>Reviews<span>›</span><span class="id">#${p.id}</span></span><h3>${esc(p.title)}</h3>
-    <div class="m"><span class="who"><span class="av${p.author==='Linear Agent'?' la':p.agentPR?'':' hu'}">${initials(p.author)}</span>${esc(p.author)}</span> · <span class="br">main ← ${esc(p.branch)}</span> · ${p.ago} ago</div></div>`;
-  if(p.agentPR){
-    const i=get(p.ref), rk=risk(i);
-    h+=`<div class="qcard"><p>${esc(i.agent)} opened this pull request on an issue you delegated.</p><span style="font-size:13.5px;color:var(--muted)">It sits under ${STATUS_LABEL[p.status]} because its checks ${i.tests?'pass':'are still running'}. Nothing here shows whether it did what the issue asked. Agent work rates it <b style="color:var(--fg)">${LABEL[rk.level]}</b> and shows the evidence.</span><div class="opts"><button class="btn pri" type="button" data-act="toagent" data-id="${i.id}">Review in Agent work</button></div></div>`;
-  } else {
-    h+=`<div><div class="sh"><span>Summary</span></div><p class="sum">${esc(p.summary)}</p></div>`;
-    if(p.note) h+=`<div class="crit"><li class="gap"><span class="ic n">!</span><div><div class="q">Changes requested</div><div class="e">${esc(p.note)}</div></div></li></div>`;
+  syncView();
+  const files=p.agentPR?get(p.ref).files:p.files.map(n=>({n,a:null,d:null}));
+  let actions;
+  if(p.agentPR) actions=`<button class="btn" type="button" disabled>Squash &amp; merge</button><button class="btn pri" type="button" data-act="toagent" data-id="${p.ref}">Review in Agent work</button>`;
+  else if(S.tab==='review') actions=`<button class="btn" type="button" data-act="prdo" data-v="changes" data-id="${p.id}">Request changes <kbd>R</kbd></button><button class="btn pri" type="button" data-act="prdo" data-v="approve" data-id="${p.id}">${IC('pr')}Approve <kbd>A</kbd></button>`;
+  else if(p.status==='ready') actions=`<button class="btn pri" type="button" data-act="prdo" data-v="merge" data-id="${p.id}">${IC('pr')}Squash &amp; merge <kbd>A</kbd></button>`;
+  else if(p.status==='draft') actions=`<button class="btn pri" type="button" data-act="prdo" data-v="ready" data-id="${p.id}">Ready for review</button>`;
+  else actions=`<span class="wait">${p.status==='changes'?'Changes requested by '+esc(p.reviewers[0]):'Waiting on '+esc(p.reviewers.join(', '))}</span><button class="btn" type="button" disabled>${IC('pr')}Squash &amp; merge</button>`;
+  let h=dTop({crumb:p.agentPR?`<span class="iss">${IC('issue')}${p.ref}</span>`:'No issue',icon:'pr',iconC:p.status==='draft'?'drc':'okc',title:p.title,a:p.a,d:p.d,ref:`${REPO}#${p.id}`,actions});
+  let main=`<div class="dhead"><h1>${esc(p.title)}</h1><div class="m">${avatar(p.author)}<span class="br">main ← ${esc(p.branch)}</span><span>${p.ago} ago</span></div></div>`;
+  if(S.view==='diff') main+=diffView(files,p.id);
+  else {
+    if(p.agentPR){const i=get(p.ref), rk=risk(i);
+      main+=`<div class="qcard"><p>${esc(i.agent)} opened this pull request on an issue you delegated.</p><span style="font-size:13.5px;color:var(--muted)">It sits under ${STATUS_LABEL[p.status]} because its checks ${i.tests?'pass':'are still running'}. Nothing here shows whether it did what the issue asked. Agent work rates it <b style="color:var(--fg)">${LABEL[rk.level]}</b> and shows the evidence.</span></div>`;}
+    else {
+      main+=`<div class="dsec"><h2>Summary</h2><p class="sum">${esc(p.summary)}</p></div>`;
+      if(p.note) main+=`<div class="dsec"><h2>Changes requested</h2><ul class="crit"><li class="gap"><span class="ic n">!</span><div><div class="q">${esc(p.reviewers[0])}</div><div class="e">${esc(p.note.replace(/^[^:]+:\s*/,''))}</div></div></li></ul></div>`;
+    }
   }
-  h+=`<div class="facts2"><div><span>Status</span><b>${STATUS_LABEL[p.status]}</b></div><div><span>Reviewers</span><b>${p.reviewers.length?esc(p.reviewers.join(', ')):(S.tab==='review'?'You':'None yet')}</b></div><div><span>Checks</span><b class="${/^(\d+) of \1/.test(p.checks)?'okc':'badc'}">${esc(p.checks)}</b></div></div>`;
-  h+=`<div><div class="sh"><span>Changes</span><span><span class="da">+${p.a}</span> <span class="dd">−${p.d}</span></span></div><ul class="files">${p.files.map(f=>`<li><div class="fr"><span>${esc(f)}</span></div></li>`).join('')}</ul></div></div>`;
-  let bar;
-  if(p.agentPR) bar=`<button class="btn" type="button" data-act="toagent" data-id="${p.ref}">Review in Agent work</button><span class="sp"></span><button class="btn" type="button" disabled>Squash &amp; merge</button>`;
-  else if(S.tab==='review') bar=`<button class="btn pri" type="button" data-act="prdo" data-v="approve" data-id="${p.id}">Approve <kbd>A</kbd></button><button class="btn" type="button" data-act="prdo" data-v="changes" data-id="${p.id}">Request changes</button>`;
-  else if(p.status==='ready') bar=`<button class="btn pri" type="button" data-act="prdo" data-v="merge" data-id="${p.id}">Squash &amp; merge <kbd>A</kbd></button>`;
-  else if(p.status==='draft') bar=`<button class="btn pri" type="button" data-act="prdo" data-v="ready" data-id="${p.id}">Ready for review</button>`;
-  else bar=`<button class="btn" type="button" disabled>Squash &amp; merge</button><span class="wait">${p.status==='changes'?'Changes requested by '+esc(p.reviewers[0]):'Waiting on '+esc(p.reviewers.join(', '))}</span>`;
-  return h+`<div class="bar-d"><div class="r">${bar}</div></div>`;
+  const allOk=/^(\d+) of \1/.test(p.checks);
+  let side=sf('Status',`${IC('pr',p.status==='draft'?'drc':'okc')}${p.status==='draft'?'Draft':'Open'}`)
+    +sf('Resolves',p.agentPR?`<span class="iss">${IC('issue')}${p.ref}</span>`:`<span class="mut">${IC('plus')}Link issue</span>`)
+    +sf('Reviewers',p.reviewers.length?p.reviewers.map(r=>avatar(r)).join(''):S.tab==='review'?avatar('You'):`<span class="mut">${IC('plus')}Add reviewers</span>`)
+    +sf('Checks',checksVal(p.checks,allOk))
+    +sf('Branch',`${IC('pr','okc')}Up to date with main`)
+    +filesBlock(files,p.id,`<span class="da">+${p.a}</span> <span class="dd">−${p.d}</span>`);
+  return h+`<div class="dwrap"><div class="dmain">${main}</div><aside class="dside" aria-label="Details">${side}</aside></div>`;
 }
 function renderDetail(){
   if(S.tab!=='agent') return renderPRDetail();
@@ -279,25 +316,34 @@ function renderDetail(){
     return done?`<div class="empty"><h3>Queue clear</h3><p>${TOTAL} agent results handled. Each one with its evidence in view.</p><button class="btn pri" data-reset type="button">Replay the demo</button></div>`
       :`<div class="empty"><h3>Select a result</h3><p>Pick one from the list to see its evidence.</p></div>`;
   }
+  syncView();
   const rk=risk(i), ovN=Object.keys(i.ov).filter(k=>i.ov[k]).length, nFlag=rk.reasons.filter(r=>r.n).length;
-  let h=`<div class="dbody"><div class="dh"><span class="crumb"><svg class="ico"><use href="#i-${i.q?'agent':'pr'}"/></svg>Reviews<span>›</span><span class="id">${i.id}</span></span><h3>${esc(i.title)}</h3>
-    <div class="m"><span class="who"><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span> · ${esc(i.origin)} · ${i.ago} ago</div></div>`;
-  h+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='typ'?(nFlag===1?'Check the flagged item, then approve.':`Check the ${nFlag} flagged items, then approve.`):`Read this one. ${nFlag} ${nFlag===1?'thing needs':'things need'} your eyes.`}</span></div>
-    <details><summary>Why this rating</summary><ul>${rk.reasons.map(r=>`<li><span class="ic ${r.g?'g':'n'}">${r.g?'✓':'!'}</span>${esc(r.t)}</li>`).join('')}</ul></details></div>`;
-  if(i.q){
-    h+=`<div class="qcard"><p>${esc(i.q.text)}</p><span style="font-size:13.5px;color:var(--muted)">${esc(i.q.ctx)}</span><div class="opts">${i.q.opts.map((o,k)=>`<button class="btn ${k===1?'pri':''}" type="button" data-act="answer" data-id="${i.id}" data-v="${k}">${esc(o)}</button>`).join('')}</div></div></div>`;
-    return h;
+  const proven=i.criteria.filter(c=>c.s==='ok').length, num=prNumOf(i);
+  const actions=i.q?'':`<button class="btn" type="button" data-act="takeover" data-id="${i.id}">Take over <kbd>E</kbd></button><button class="btn" type="button" data-act="compose" aria-expanded="${S.compose}">Request changes <kbd>R</kbd></button><button class="btn pri" type="button" data-act="${ovN?'sendov':'approve'}" data-id="${i.id}">${IC('pr')}${ovN?`Send ${ovN} override${ovN>1?'s':''}`:'Approve and merge'} <kbd>A</kbd></button>`;
+  let h=dTop({crumb:`<span class="iss">${IC('issue')}${i.id}</span>`,icon:i.q?'agent':'pr',iconC:i.q?'agc':'okc',title:i.title,a:i.q?null:adds(i),d:dels(i),ref:i.q?'':`${REPO}#${num}`,actions,noDiff:!!i.q});
+  let main=`<div class="dhead"><h1>${esc(i.title)}</h1><div class="m">${avatar(i.agent)}<span>${esc(i.origin)}</span>${i.q?'':`<span class="br">main ← ${i.id.toLowerCase()}</span>`}<span>${i.ago} ago</span></div></div>`;
+  if(S.compose&&!i.q) main+=`<div class="cmp"><textarea id="cmt" placeholder="Tell ${esc(i.agent)} what to change">${esc(S.text)}</textarea>
+    <div class="steer"><button type="button" data-act="steer" data-t="Add a test for the missing case.">Add a test for the gap</button><button type="button" data-act="steer" data-t="Split this into smaller pull requests.">Split it up</button><button type="button" data-act="steer" data-t="Explain the assumption before changing it.">Ask why</button></div>
+    <div class="r"><button class="btn pri" type="button" data-act="send" data-id="${i.id}">Send to ${esc(i.agent)}</button><button class="btn" type="button" data-act="cancel">Cancel</button></div></div>`;
+  if(S.view==='diff'&&!i.q) main+=diffView(i.files,i.id);
+  else {
+    main+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='typ'?(nFlag===1?'Check the flagged item, then approve.':`Check the ${nFlag} flagged items, then approve.`):`Read this one. ${nFlag} ${nFlag===1?'thing needs':'things need'} your eyes.`}</span></div>
+      <details><summary>Why this rating</summary><ul>${rk.reasons.map(r=>`<li><span class="ic ${r.g?'g':'n'}">${r.g?'✓':'!'}</span>${esc(r.t)}</li>`).join('')}</ul></details></div>`;
+    if(i.q) main+=`<div class="qcard"><p>${esc(i.q.text)}</p><span style="font-size:13.5px;color:var(--muted)">${esc(i.q.ctx)}</span><div class="opts">${i.q.opts.map((o,k)=>`<button class="btn ${k===1?'pri':''}" type="button" data-act="answer" data-id="${i.id}" data-v="${k}">${esc(o)}</button>`).join('')}</div></div>`;
+    else {
+      main+=`<div class="dsec"><h2>Intent and outcome<span class="nw">New</span><span class="hm">${i.criteria.length} criteria from ${i.id}</span></h2><ul class="crit">${i.criteria.map(c=>`<li class="${c.s==='gap'?'gap':''}"><span class="ic ${c.s==='ok'?'g':'n'}">${c.s==='ok'?'✓':'!'}</span><div><div class="q">${esc(c.q)}</div><div class="e">${esc(c.e)}</div></div></li>`).join('')}</ul></div>`;
+      main+=`<div class="dsec"><h2>What the agent assumed<span class="nw">New</span></h2>${i.assume.length?`<ul class="assume">${i.assume.map((a,k)=>`<li class="${i.ov[k]?'ov':''}"><span>${esc(a)}</span><span class="bt"><button type="button" data-act="keep" data-id="${i.id}" data-k="${k}" aria-pressed="${!i.ov[k]}">Keep</button><button type="button" data-act="over" data-id="${i.id}" data-k="${k}" aria-pressed="${!!i.ov[k]}">Override</button></span></li>`).join('')}</ul>`:`<p class="sum mut">None. The agent followed existing patterns.</p>`}</div>`;
+    }
   }
-  h+=`<div><div class="sh"><span>Intent and outcome</span><span>${i.criteria.length} criteria from the issue</span></div><ul class="crit">${i.criteria.map(c=>`<li class="${c.s==='gap'?'gap':''}"><span class="ic ${c.s==='ok'?'g':'n'}">${c.s==='ok'?'✓':'!'}</span><div><div class="q">${esc(c.q)}</div><div class="e">${esc(c.e)}</div></div></li>`).join('')}</ul></div>`;
-  h+=`<div><div class="sh"><span>What the agent assumed</span></div>${i.assume.length?`<ul class="assume">${i.assume.map((a,k)=>`<li class="${i.ov[k]?'ov':''}"><span>${esc(a)}</span><span class="bt"><button type="button" data-act="keep" data-id="${i.id}" data-k="${k}" aria-pressed="${!i.ov[k]}">Keep</button><button type="button" data-act="over" data-id="${i.id}" data-k="${k}" aria-pressed="${!!i.ov[k]}">Override</button></span></li>`).join('')}</ul>`:`<p style="font-size:14px;color:var(--muted)">None. The agent followed existing patterns.</p>`}</div>`;
-  h+=`<div><div class="sh"><span>Changes</span><span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span></div><ul class="files">${i.files.map((f,k)=>{const key=i.id+':'+k;return `<li><div class="fr"><span>${esc(f.n)} <span class="da">+${f.a}</span> <span class="dd">−${f.d}</span></span>${f.diff?`<button type="button" data-act="diff" data-key="${key}">${S.open[key]?'Hide':'Preview'}</button>`:''}</div>${f.diff&&S.open[key]?`<div class="diff">${f.diff.map(l=>`<div class="${l[0]==='+'?'a':'d'}">${esc(l)}</div>`).join('')}</div>`:''}</li>`}).join('')}</ul></div>`;
-  h+=`<div class="chk"><span><b class="${i.tests?'':'badc'}">${esc(i.checks)}</b></span><span>No preview deployment</span></div></div>`;
-  h+=`<div class="bar-d">${S.compose?`<textarea id="cmt" placeholder="Tell ${esc(i.agent)} what to change">${esc(S.text)}</textarea>
-    <div class="steer"><button type="button" data-act="steer" data-t="Add a test for the missing case.">Add a test for the gap</button><button type="button" data-act="steer" data-t="Split this into smaller pull requests.">Split it up</button><button type="button" data-act="steer" data-t="Explain the assumption before changing it.">Ask why</button></div>`:''}
-    <div class="r">${S.compose?`<button class="btn pri" type="button" data-act="send" data-id="${i.id}">Send to ${esc(i.agent)}</button><button class="btn" type="button" data-act="cancel">Cancel</button>`
-      :`<button class="btn pri" type="button" data-act="${ovN?'sendov':'approve'}" data-id="${i.id}">${ovN?`Send ${ovN} override${ovN>1?'s':''}`:'Approve and merge'} <kbd>A</kbd></button>
-        <button class="btn" type="button" data-act="compose">Request changes <kbd>R</kbd></button><span class="sp"></span><button class="btn" type="button" data-act="takeover" data-id="${i.id}">Take over <kbd>E</kbd></button>`}</div></div>`;
-  return h;
+  let side=sf('Status',i.q?`${IC('agent','agc')}Waiting on you`:`${IC('pr','okc')}Open`)
+    +sf('Resolves',`<span class="iss">${IC('issue')}${i.id}</span>`)
+    +sf('Risk',`<span class="pill ${rk.level}">${LABEL[rk.level]}</span>${i.q?'':`<span class="mut">${nFlag?nFlag+' flagged':'Nothing flagged'}</span>`}`,true)
+    +(i.q?'':sf('Evidence',`${IC(proven===i.criteria.length?'check':'risk',proven===i.criteria.length?'okc':'wrc')}${proven} of ${i.criteria.length} criteria proven`,true))
+    +sf('Agent',`<div class="stack">${avatar(i.agent)}<span class="mut">${esc(i.origin)}</span></div>`,true)
+    +sf('Reviewers',avatar('You'))
+    +sf('Checks',checksVal(i.checks,i.tests));
+  if(!i.q) side+=sf('Branch',`${IC('pr','okc')}Up to date with main`)+filesBlock(i.files,i.id,`<span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span>`);
+  return h+`<div class="dwrap"><div class="dmain">${main}</div><aside class="dside" aria-label="Details">${side}</aside></div>`;
 }
 function renderRules(){
   const m=matches(), risky=m.filter(i=>risk(i).score>0);
@@ -406,6 +452,8 @@ appEl.addEventListener('click',e=>{
   const a=t.dataset.act, id=t.dataset.id;
   if(a==='rulesbg'){if(e.target!==t)return;return closeRules()}
   if(a==='tab'){S.tab=t.dataset.v;S.menu=null;S.compose=false;S.checked.clear();renderAll()}
+  else if(a==='view'){S.view=t.dataset.v;renderAll()}
+  else if(a==='diffx'){const k=t.dataset.key;S.open[k]=S.open[k]===false;renderAll()}
   else if(a==='prselect'){S.prSel[S.tab]=id;renderAll()}
   else if(a==='toagent'){S.tab='agent';S.f=defF();S.sel=id;S.compose=false;renderAll()}
   else if(a==='prdo'){prDo(id,t.dataset.v)}

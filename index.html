@@ -4,31 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Agent Review Queue: a design exercise and working prototype for reviewing AI agent results by risk.">
-<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#090909;color:#eeeef0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <title>Agent Review Queue</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout concept: a case-study shell with five tabs. The Prototype tab holds a three-pane work surface (nav, queue, evidence) that behaves like the product. */
 :root{
-  --bg:#F4F5F8; --surface:#FFFFFF; --surface-2:#ECEEF3; --line:#DADDE6; --fg:#12151C; --muted:#586070;
-  --accent:#2F4FD6; --accent-soft:#E4E9FC; --on-accent:#FFFFFF;
-  --ok:#0F7A49; --ok-soft:#DFF3E8; --warn:#8F5600; --warn-soft:#FAEBCB; --risk:#B0251D; --risk-soft:#FADFDC;
-  --add:#0F7A49; --add-bg:#E6F5EC; --del:#B0251D; --del-bg:#FBE9E7;
-  --font:'Geist',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  --r:10px;
+  /* Linear dark theme, sampled from the product */
+  --bg:#090909;        /* app chrome behind the panels */
+  --surface:#131313;   /* main panel */
+  --surface-2:#1a1a1c; /* group headers, code, wells */
+  --hover:#1c1c1f; --sel:#232325; --chip:#29282b;
+  --line:#232326; --line-soft:#1c1c1e;
+  --fg:#eeeef0; --fg-2:#c9c9cc; --muted:#8a8a8e; --faint:#626266;
+  --brand:#5e6ad2;     /* Linear indigo: primary buttons, mark */
+  --accent:#8f97ef;    /* indigo for text on dark */
+  --accent-soft:rgba(94,106,210,.16); --on-accent:#ffffff;
+  --ok:#4cb782; --ok-soft:rgba(76,183,130,.14);
+  --warn:#f2994a; --warn-soft:rgba(242,153,74,.13);
+  --risk:#eb5757; --risk-soft:rgba(235,87,87,.14);
+  --add:#8ac485; --add-bg:rgba(76,183,130,.12); --del:#e0908b; --del-bg:rgba(235,87,87,.12);
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:8px; color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0D0F14; --surface:#151821; --surface-2:#1C202B; --line:#2A2F3D; --fg:#E7E9EF; --muted:#9AA2B4;
-  --accent:#8199FF; --accent-soft:#1E264F; --on-accent:#0D0F14;
-  --ok:#4DC48B; --ok-soft:#12291F; --warn:#E8A93F; --warn-soft:#2C2310; --risk:#F2786F; --risk-soft:#331816;
-  --add:#4DC48B; --add-bg:#10261C; --del:#F2786F; --del-bg:#2E1715; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0D0F14; --surface:#151821; --surface-2:#1C202B; --line:#2A2F3D; --fg:#E7E9EF; --muted:#9AA2B4;
-  --accent:#8199FF; --accent-soft:#1E264F; --on-accent:#0D0F14;
-  --ok:#4DC48B; --ok-soft:#12291F; --warn:#E8A93F; --warn-soft:#2C2310; --risk:#F2786F; --risk-soft:#331816;
-  --add:#4DC48B; --add-bg:#10261C; --del:#F2786F; --del-bg:#2E1715; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
@@ -202,15 +203,125 @@ kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-b
   .ls{max-height:420px;border-right:0;border-bottom:1px solid var(--line)}
   .dt{min-height:460px}
 }
+/* ---------- Linear skin ---------- */
+body{font-size:15px;letter-spacing:-.005em}
+h1{font-weight:600;letter-spacing:-.028em}
+h2{font-weight:600;letter-spacing:-.018em}
+.top{background:rgba(9,9,9,.85);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line-soft)}
+body::before{background:var(--bg)}
+.logo{width:22px;height:22px;color:var(--fg);flex:none}
+.brand b{font-size:14px;font-weight:600}
+.tabs a{border-radius:6px;font-size:13.5px;padding:6px 11px;color:var(--muted)}
+.tabs a:hover{background:var(--hover);color:var(--fg)}
+.tabs a[aria-current="page"]{background:var(--chip);color:var(--fg)}
+.card{border-color:var(--line);border-radius:var(--r)}
+.chip.win{background:var(--accent-soft);color:var(--accent)}
+.path.good .st{border-color:rgba(94,106,210,.5);background:var(--accent-soft);color:var(--fg)}
+.scroll{border-radius:var(--r)}
+.tbl td.c{color:var(--accent)}
+kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 5px;font-size:11px;line-height:16px;color:var(--fg-2);font-family:var(--font)}
+.btn{background:var(--chip);border:1px solid #333336;border-radius:6px;padding:5px 11px;font-size:13px;color:var(--fg);height:30px}
+.btn:hover{background:#323235}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.pri kbd{background:rgba(255,255,255,.16);border-color:transparent;color:#fff}
+.btn.sm{height:26px;padding:3px 9px;font-size:12.5px}
+.ico{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* app frame: sidebar on the chrome, list and detail on one rounded panel */
+.app{background:var(--bg);border:1px solid var(--line-soft);border-radius:10px;padding:8px 8px 8px 0;font-size:13px;line-height:1.5;grid-template-columns:220px minmax(300px,380px) minmax(0,1fr)}
+.sb{background:transparent;border:0;padding:6px 10px;gap:1px;font-size:13px}
+.ws{display:flex;align-items:center;gap:8px;font-weight:600;padding:4px 4px 10px 6px;color:var(--fg)}
+.ws .wsa{width:20px;height:20px;border-radius:5px;background:#3a91ad;color:#fff;display:grid;place-items:center;font-size:9.5px;font-weight:700;letter-spacing:.02em;flex:none}
+.ws .sp{flex:1}
+.ws .ib{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--fg-2)}
+.ws .ib.c{background:var(--chip)}
+.nv{display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:6px;color:var(--fg-2);font-weight:500;height:30px}
+.nv .ico{color:var(--muted)}
+.nv span{flex:1}
+.nv.on{background:var(--sel);color:var(--fg);box-shadow:none;font-weight:500}
+.nv.on .ico{color:var(--fg)}
+.nv em{font-style:normal;font-family:var(--font);font-size:12px;color:var(--muted)}
+.nv.sub{padding-left:24px}
+.sbh{font-family:var(--font);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:500;padding:16px 8px 4px;display:flex;align-items:center;gap:4px}
+.sbh::after{content:"";border:3.5px solid transparent;border-top:4px solid currentColor;margin-top:4px}
+.nv.team .tm{width:16px;height:16px;border-radius:4px;background:rgba(76,183,130,.18);color:var(--ok);display:grid;place-items:center;font-size:9px;font-weight:700}
+.ls{background:var(--surface);border:1px solid var(--line-soft);border-right:1px solid var(--line-soft);border-radius:8px 0 0 8px}
+.dt{background:var(--surface);border:1px solid var(--line-soft);border-left:0;border-radius:0 8px 8px 0}
+.lh{background:var(--surface);border-bottom:0;padding:12px 12px 8px;gap:10px}
+.lh b{font-size:14px;font-weight:600}
+.lh .cnt{color:var(--muted);font-weight:500;margin-left:4px}
+.seg{gap:4px}
+.seg button{border:0;background:transparent;border-radius:6px;padding:3px 10px;font-size:13px;color:var(--muted);font-weight:500}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-pressed="true"]{background:var(--chip);color:var(--fg);font-weight:500}
+.gh{margin:6px 8px 4px;padding:5px 10px;border-radius:6px;background:var(--surface-2);font-family:var(--font);text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500;color:var(--fg-2)}
+.gh .n{color:var(--muted);margin-left:6px}
+.gh label{color:var(--muted)}
+.gh input,.rowwrap input,.rule input{accent-color:var(--brand)}
+.rowwrap{border-bottom:0;margin:1px 8px;border-radius:6px}
+.rowwrap:hover{background:var(--hover)}
+.rowwrap.sel{background:var(--sel)}
+.rowwrap input{margin-left:10px}
+.row{padding:8px 10px;grid-template-columns:16px minmax(0,1fr);column-gap:10px;row-gap:2px}
+.row .ri{grid-row:1/3;margin-top:2px}
+.row .ri.pr{color:var(--ok)}.row .ri.ag{color:var(--accent)}
+.row .t{font-weight:500;color:var(--fg)}
+.row .m{color:var(--muted);font-size:12px}
+.row .id{font-size:11.5px;color:var(--muted)}
+.pill{background:transparent!important;border:1px solid #2e2e32;color:var(--fg-2)!important;font-weight:500;padding:0 7px;line-height:18px}
+.pill.low::before{background:var(--ok)}.pill.med::before{background:var(--warn)}.pill.high::before{background:var(--risk)}.pill.ask::before{background:var(--brand)}
+.av{background:#3a3a3e;color:var(--fg)}
+.av.la{background:var(--brand);color:#fff}
+.dbody{padding:22px 26px;gap:24px}
+.dh .crumb{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px}
+.dh .crumb .ico{width:14px;height:14px;color:var(--ok)}
+.dh h3{font-size:22px;font-weight:600;letter-spacing:-.018em;color:var(--fg)}
+.sh{font-family:var(--font);text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:600;color:var(--fg)}
+.sh span+span{color:var(--muted);font-weight:500;font-size:12.5px}
+.rk,.crit,.files li,.assume li{border-color:var(--line)}
+.rk{background:var(--surface-2)}
+.crit li.gap{background:var(--warn-soft)}
+.assume li.ov{border-color:rgba(94,106,210,.55)}
+.assume .bt button{background:var(--chip);border-color:#333336;border-radius:5px}
+.assume .bt button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.diff{background:#0e0e0f}
+.qcard{background:var(--accent-soft);border-color:rgba(94,106,210,.45)}
+.bar-d{background:var(--surface);border-top:1px solid var(--line-soft)}
+.bar-d textarea{background:var(--surface-2);border-color:var(--line);border-radius:6px}
+.steer button{background:var(--chip);border-color:#333336}
+.toast{background:#1f1f22;color:var(--fg);border:1px solid #333336;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.toast button{color:var(--accent);text-decoration:none}
+.modal{background:rgba(0,0,0,.55)}
+.mbox{background:#1b1b1d;border-color:#2e2e32;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.prev{background:var(--surface)}
+.prev .ids span{background:var(--chip);border-color:#333336}
+@media (max-width:980px){.app{padding:8px}.ls{border-radius:8px 8px 0 0;border-right:1px solid var(--line-soft)}.dt{border-left:1px solid var(--line-soft);border-top:0;border-radius:0 0 8px 8px}}
 @media (prefers-reduced-motion:no-preference){.rowwrap{transition:background .12s}.toast{animation:up .18s ease-out}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-linear" viewBox="0 0 100 100"><path fill="currentColor" d="M1.22541 61.5228c-.2225-.9485.90748-1.5459 1.59638-.857L39.3342 97.1782c.6889.6889.0915 1.8189-.857 1.5964C20.0515 94.4522 5.54779 79.9485 1.22541 61.5228ZM.00189135 46.8891c-.01764375.2833.08887215.5599.28957165.7606L52.3503 99.7085c.2007.2007.4773.3075.7606.2896 2.3692-.1476 4.6938-.46 6.9624-.9259.7645-.157 1.0301-1.0963.4782-1.6481L2.57595 39.4485c-.55186-.5519-1.49117-.2863-1.648174.4782-.465915 2.2686-.77832 4.5932-.92588465 6.9624ZM4.21093 29.7054c-.16649.3738-.08169.8106.20765 1.1l64.77602 64.776c.2894.2894.7262.3742 1.1.2077 1.7861-.7956 3.5171-1.6927 5.1855-2.684.5521-.328.6373-1.0867.1832-1.5407L8.43566 24.3367c-.45409-.4541-1.21271-.3689-1.54074.1832-.99132 1.6684-1.88843 3.3994-2.68399 5.1855ZM12.6587 18.074c-.3701-.3701-.393-.9637-.0443-1.3541C21.7795 6.45931 35.1114 0 49.9519 0 77.5927 0 100 22.4073 100 50.0481c0 14.8405-6.4593 28.1724-16.7199 37.3375-.3903.3487-.984.3258-1.3542-.0443L12.6587 18.074Z"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 16 16"><path d="M2.25 9.25 3.9 3.6a1 1 0 0 1 .96-.72h6.28a1 1 0 0 1 .96.72l1.65 5.65v3a1.1 1.1 0 0 1-1.1 1.1H3.35a1.1 1.1 0 0 1-1.1-1.1z"/><path d="M2.4 9.25h3.1l.9 1.5h3.2l.9-1.5h3.1"/></symbol>
+  <symbol id="i-my" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75" stroke-dasharray="2.2 1.9"/><circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pr" viewBox="0 0 16 16"><circle cx="4.25" cy="3.75" r="1.6"/><circle cx="4.25" cy="12.25" r="1.6"/><circle cx="11.75" cy="12.25" r="1.6"/><path d="M4.25 5.35v5.3M11.75 10.65V6.25a1.75 1.75 0 0 0-1.75-1.75H7.25"/><path d="M8.75 3 7.25 4.5 8.75 6"/></symbol>
+  <symbol id="i-agent" viewBox="0 0 16 16"><path d="M3.2 2.6 13.4 7.4a.66.66 0 0 1 0 1.2L3.2 13.4a.5.5 0 0 1-.68-.62L4.6 8 2.52 3.22a.5.5 0 0 1 .68-.62Z"/><path d="M4.6 8h3.6"/></symbol>
+  <symbol id="i-projects" viewBox="0 0 16 16"><path d="M8 1.9 13.5 5v6L8 14.1 2.5 11V5z"/><path d="M2.6 5.1 8 8.1l5.4-3M8 8.1v5.9"/></symbol>
+  <symbol id="i-views" viewBox="0 0 16 16"><path d="M8 2.2 14 5.4 8 8.6 2 5.4z"/><path d="m2 8.3 6 3.2 6-3.2M2 11.1l6 3.2 6-3.2"/></symbol>
+  <symbol id="i-loops" viewBox="0 0 16 16"><circle cx="5.25" cy="5.25" r="2.75"/><circle cx="10.75" cy="5.25" r="2.75"/><circle cx="5.25" cy="10.75" r="2.75"/><circle cx="10.75" cy="10.75" r="2.75"/></symbol>
+  <symbol id="i-more" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="8" r="1.1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.4 10.4 3.1 3.1"/></symbol>
+  <symbol id="i-compose" viewBox="0 0 16 16"><path d="M13.2 8.5v3.9a1.3 1.3 0 0 1-1.3 1.3H3.6a1.3 1.3 0 0 1-1.3-1.3V4.1a1.3 1.3 0 0 1 1.3-1.3h3.9"/><path d="m11.6 2.2 2.2 2.2-5.9 5.9-2.7.5.5-2.7z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 16 16"><path d="M2.75 7.2 8 2.75l5.25 4.45v5.9a.9.9 0 0 1-.9.9H9.6V10.3H6.4V14H3.65a.9.9 0 0 1-.9-.9z"/></symbol>
+  <symbol id="i-issues" viewBox="0 0 16 16"><rect x="5.25" y="2.25" width="8.5" height="8.5" rx="2"/><path d="M10.75 13.1a1.6 1.6 0 0 1-1.6 1.15H4.25a2 2 0 0 1-2-2V7.35a1.6 1.6 0 0 1 1.15-1.6"/></symbol>
+  <symbol id="i-triage" viewBox="0 0 16 16"><path d="M2.5 3h11L9.4 8.2v4.3l-2.8 1.4V8.2z"/></symbol>
+  <symbol id="i-rules" viewBox="0 0 16 16"><path d="M2.5 4.5h6M11.5 4.5h2M2.5 11.5h2M7.5 11.5h6"/><circle cx="10" cy="4.5" r="1.5"/><circle cx="6" cy="11.5" r="1.5"/></symbol>
+</svg>
 
 
 <header class="top">
   <div class="wrap topin">
-    <div class="brand"><span class="mark" aria-hidden="true"></span><div><b>Agent Review Queue</b><small>Senior Designer exercise by Sean Crisman. Unofficial concept for Linear.</small></div></div>
+    <div class="brand"><svg class="logo" aria-hidden="true"><use href="#i-linear"/></svg><div><b>Agent Review Queue</b><small>Senior Designer exercise by Sean Crisman. Unofficial concept for Linear.</small></div></div>
     <nav class="tabs" id="tabs" aria-label="Sections">
       <a href="#problem">Problem</a><a href="#explore">Explorations</a><a href="#prototype">Prototype</a><a href="#leverage">Leverage</a><a href="#ai">AI process</a>
     </nav>
@@ -394,7 +505,7 @@ kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-b
       <div class="card"><h3>Assumption chip</h3><p>Anything the agent decided on its own, with keep and override. Turns hidden choices into visible ones.</p>
         <ul class="assume mini" style="margin-top:12px"><li><span>Used the saved timezone</span><span class="bt"><button aria-pressed="true">Keep</button><button aria-pressed="false">Override</button></span></li></ul></div>
       <div class="card"><h3>Agent attribution</h3><p>Who did it, who delegated it, which Loop started it. The same line everywhere an agent appears.</p>
-        <p class="mini" style="color:var(--fg)"><span class="av">L</span>Linear Agent <span style="color:var(--muted)">· from Loop: Triage bugs · 14m</span></p></div>
+        <p class="mini" style="color:var(--fg)"><span class="av la">L</span>Linear Agent <span style="color:var(--muted)">· from Loop: Triage bugs · 14m</span></p></div>
       <div class="card"><h3>Decision bar</h3><p>One primary action, one way to steer, one way out. Learn it once, use it in every review.</p>
         <div class="mini" style="display:flex;gap:8px;flex-wrap:wrap"><span class="btn pri sm">Approve</span><span class="btn sm">Request changes</span><span class="btn sm">Take over</span></div></div>
     </div>
@@ -573,19 +684,19 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function pendingCount(){return ITEMS.filter(i=>i.st==='pending').length}
 function renderList(){
   const g=groups(), all=ordered();
-  let h=`<div class="lh"><div class="r"><b>Review <span style="color:var(--muted);font-weight:500">${all.length} waiting</span></b><button class="btn sm" data-act="rules" type="button">Review rules</button></div>
+  let h=`<div class="lh"><div class="r"><b>Reviews<span class="cnt">${all.length}</span></b><button class="btn sm" data-act="rules" type="button"><svg class="ico"><use href="#i-rules"/></svg>Review rules</button></div>
   <div class="seg" role="group" aria-label="Filter">${[['all','All'],['me','Delegated by me'],['loop','From Loops']].map(([k,l])=>`<button type="button" data-act="filter" data-v="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join('')}</div></div>`;
   if(!all.length) h+=`<div class="empty"><p>Nothing waiting in this view.</p></div>`;
   GROUPS.forEach(({k,l})=>{
     if(!g[k].length) return;
     const allChecked=k==='safe'&&g[k].every(i=>S.checked.has(i.id));
-    h+=`<div class="gh"><span>${l} (${g[k].length})</span>${k==='safe'?`<label><input type="checkbox" data-selall ${allChecked?'checked':''}>Select all</label>`:''}</div>`;
+    h+=`<div class="gh"><span>${l}<span class="n">${g[k].length}</span></span>${k==='safe'?`<label><input type="checkbox" data-selall ${allChecked?'checked':''}>Select all</label>`:''}</div>`;
     g[k].forEach(i=>{
       const rk=risk(i);
       h+=`<div class="rowwrap ${S.sel===i.id?'sel':''}">${k==='safe'?`<input type="checkbox" data-check="${i.id}" aria-label="Select ${esc(i.id)}" ${S.checked.has(i.id)?'checked':''}>`:''}
       <button class="row" type="button" data-act="select" data-id="${i.id}" aria-current="${S.sel===i.id}">
-        <span class="t">${esc(i.title)}</span>
-        <span class="m"><span class="id">${i.id}</span><span><span class="av">${i.agent[0]}</span>${i.agent}</span>${i.q?'':`<span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span>`}<span>${i.ago}</span><span class="pill ${rk.level}">${LABEL[rk.level]}</span></span>
+        <svg class="ico ri ${i.q?'ag':'pr'}"><use href="#i-${i.q?'agent':'pr'}"/></svg><span class="t">${esc(i.title)}</span>
+        <span class="m"><span class="id">${i.id}</span><span><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span>${i.q?'':`<span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span>`}<span>${i.ago}</span><span class="pill ${rk.level}">${LABEL[rk.level]}</span></span>
       </button></div>`;
     });
   });
@@ -599,8 +710,8 @@ function renderDetail(){
       :`<div class="empty"><h3>Select a result</h3><p>Pick one from the list to see its evidence.</p></div>`;
   }
   const rk=risk(i), ovN=Object.keys(i.ov).filter(k=>i.ov[k]).length;
-  let h=`<div class="dbody"><div class="dh"><span class="id">${i.id}</span><h3>${esc(i.title)}</h3>
-    <div class="m"><span class="av">${i.agent[0]}</span>${i.agent} · ${esc(i.origin)} · ${i.ago} ago</div></div>`;
+  let h=`<div class="dbody"><div class="dh"><span class="crumb"><svg class="ico"><use href="#i-${i.q?'agent':'pr'}"/></svg>Reviews<span>›</span><span class="id">${i.id}</span></span><h3>${esc(i.title)}</h3>
+    <div class="m"><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent} · ${esc(i.origin)} · ${i.ago} ago</div></div>`;
   h+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='high'?'Read this one. Two things need your eyes.':'Check the flagged item, then approve.'}</span></div>
     <details><summary>Why this rating</summary><ul>${rk.reasons.map(r=>`<li><span class="ic ${r.g?'g':'n'}">${r.g?'✓':'!'}</span>${esc(r.t)}</li>`).join('')}</ul></details></div>`;
   if(i.q){
@@ -630,10 +741,7 @@ function renderRules(){
 function renderAll(){
   const app=document.getElementById('app');
   const ls=app.querySelector('.ls'), dt=app.querySelector('.dt'); const sl=ls?ls.scrollTop:0, sd=dt&&dt.dataset.sel===S.sel?dt.scrollTop:0;
-  app.innerHTML=`<aside class="sb" aria-hidden="true"><div class="ws"><i></i>Acme Eng</div>
-    <div class="nv"><span>Inbox</span><em>3</em></div><div class="nv"><span>My issues</span></div>
-    <div class="nv on"><span>Review</span><em>${pendingCount()}</em></div><div class="nv"><span>Triage</span><em>2</em></div>
-    <div class="sbh">Workspace</div><div class="nv"><span>Projects</span></div><div class="nv"><span>Views</span></div><div class="nv"><span>Loops</span></div><div class="nv"><span>Insights</span></div></aside>
+  app.innerHTML=`<aside class="sb" aria-hidden="true"><div class="ws"><span class="wsa">AE</span>Acme Eng<span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><span class="tm" style="flex:none">E</span><span>Engineering</span></div><div class="nv sub"><svg class="ico"><use href="#i-triage"/></svg><span>Triage</span><em>2</em></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div></aside>
     <section class="ls" aria-label="Review queue">${renderList()}</section>
     <section class="dt" data-sel="${S.sel}" aria-label="Evidence">${renderDetail()}</section>
     ${S.rulesOpen?renderRules():''}

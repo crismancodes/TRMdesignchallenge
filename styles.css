@@ -224,7 +224,7 @@ kbd{background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 
 .ico{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
 
 /* app frame: sidebar on the chrome, list and detail on one rounded panel */
-.app{background:var(--bg);border:1px solid var(--line-soft);border-radius:10px;padding:8px 8px 8px 0;font-size:13px;line-height:1.5;grid-template-columns:220px minmax(300px,380px) minmax(0,1fr)}
+.app{background:var(--bg);border:1px solid var(--line-soft);border-radius:10px;padding:8px 8px 8px 0;font-size:13px;line-height:1.5;grid-template-columns:220px minmax(340px,440px) minmax(0,1fr)}
 .sb{background:transparent;border:0;padding:6px 10px;gap:1px;font-size:13px}
 .ws{display:flex;align-items:center;gap:8px;font-weight:600;padding:4px 4px 10px 6px;color:var(--fg)}
 .ws .wsa{width:20px;height:20px;border-radius:5px;background:#3a91ad;color:#fff;display:grid;place-items:center;font-size:9.5px;font-weight:700;letter-spacing:.02em;flex:none}

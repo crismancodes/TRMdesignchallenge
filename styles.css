@@ -462,3 +462,16 @@ html.full body{overflow:hidden;font-size:13px}
   .dr1 .ref{display:none}
   .dr2 .btn{padding:5px 10px}
 }
+
+/* pull request description, styled like Linear's rendered markdown */
+.md{color:var(--fg);font-size:14.5px;line-height:1.65}
+.md .from{color:var(--muted);font-size:12.5px;padding-top:18px;border-top:1px solid var(--line-soft);margin-bottom:14px}
+.md h2{font-size:19px;font-weight:600;letter-spacing:-.015em;margin:0 0 10px}
+.md h3{font-size:15px;font-weight:600;margin:20px 0 8px}
+.md p{color:var(--fg-2);margin:0;max-width:72ch}
+.md ul,.md ol{padding-left:22px;display:grid;gap:6px;color:var(--fg-2);max-width:72ch}
+.md ul{list-style:disc}.md ol{list-style:decimal}
+.md li::marker{color:var(--muted)}
+.md b{color:var(--fg);font-weight:600}
+.md code{font-family:var(--mono);font-size:12.5px;background:var(--chip);border:1px solid #333336;border-radius:4px;padding:0 5px;color:var(--fg)}
+.md h2+h3{margin-top:14px}

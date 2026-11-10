@@ -249,6 +249,68 @@ function renderPRList(){
   });
   return h;
 }
+/* ---------- pull request descriptions, written the way a PR body reads in Linear ---------- */
+const DESC={
+ 'ENG-387':{summary:'Adds retries with exponential backoff and jitter to webhook delivery, so a short outage at the receiving end no longer drops events. The retry policy lives in a new `backoff.ts` helper that the delivery worker calls between attempts.',
+  commits:[['Add a backoff helper','`nextDelay(attempt)` returns a jittered delay that doubles each attempt, capped at 5 minutes.'],['Retry failed deliveries','The worker retries on network errors and 5xx responses. 4xx responses are not retried, except 429.'],['Make the retry count configurable','`WEBHOOK_MAX_ATTEMPTS` defaults to 5.'],['Update delivery tests','Existing tests pass unchanged. A new test checks the delay curve.']],
+  testing:['`pnpm test workers` passes, 48 tests.','Ran the worker locally against a receiver that returned 503 three times, then 200. The event arrived on the fourth attempt.']},
+ 'ENG-409':{summary:'Upgrades date-fns from 3.6 to 4.1. Version 4 drops the default export and renames two options, so the codemod updated 9 call sites.',
+  commits:[['Bump date-fns to 4.1','Updates `package.json` and `pnpm-lock.yaml`.'],['Run the date-fns v4 codemod','Updates imports and renamed options at 9 call sites.'],['Fix a type error in the reports module','The new `Interval` type is stricter about the order of start and end.']],
+  testing:['`pnpm build` and `pnpm test` pass.','Spot-checked dates on the Insights and Cycles pages in a local build.']},
+ 'ENG-412':{summary:'Fixes the weekly digest grouping issues under the wrong day for people far from UTC. Days are now computed in the recipient’s saved timezone instead of UTC.',
+  commits:[['Group digest items by local day','`group-by-day.ts` formats each completion time in the recipient’s timezone with `formatInTimeZone`.'],['Add timezone tests','Covers UTC-8 and UTC+13 around midnight.']],
+  testing:['`pnpm test digest` passes, 22 tests.','Rendered a sample digest for a UTC+13 user. Friday’s issues now appear under Friday.']},
+ 'ENG-398':{summary:'Updates the /v2/search reference to match the current rate limit of 60 requests per minute, and documents the Retry-After header.',
+  commits:[['Update the rate limit section','Replaces the old figure of 30 requests per minute.'],['Document Retry-After','Adds an example 429 response.']],
+  testing:['The docs build passes.','Code samples linted and run against the staging API.']},
+ 'ENG-405':{summary:'Renames workspace to team in the empty states, following the naming change. Settings, billing and legal copy keep workspace on purpose.',
+  commits:[['Update empty-state strings','12 strings across 6 files.'],['Regenerate snapshots','6 snapshot files.']],
+  testing:['`pnpm test empty-states` passes.','Checked every empty state in the component gallery.']},
+ 'ENG-401':{summary:'Removes the `new_sidebar_v1` flag, which has been fully rolled out for 38 days, along with the dead code path behind it.',
+  commits:[['Remove the flag checks','4 files.'],['Delete the old sidebar branch','58 lines removed, no new code.']],
+  testing:['`pnpm test` passes.','Searched the codebase and config for the flag name: 0 matches.']},
+ 'ENG-424':{summary:'Retries invoice syncs to Stripe that failed on the previous hourly run, and adds an idempotency key so a retry cannot create a duplicate invoice.',
+  commits:[['Retry failed syncs on the next run','Failed invoices are queued again instead of being skipped.'],['Add an idempotency key','Built from the invoice ID and version.'],['Log sync errors with the invoice ID','']],
+  testing:['Unit tests pass.','The Stripe integration test fails on CI. I could not reproduce it locally.']},
+ 'ENG-421':{summary:'Adds rate limiting to the login endpoint to slow down password guessing. After 10 failed attempts in 5 minutes from the same IP and email, the endpoint returns 429 with a Retry-After header.',
+  commits:[['Add a rate limiter','Counters live in the existing Redis cache with a 5 minute expiry.'],['Apply it to /login','A successful login resets the counter.'],['Add tests','Covers the 11th attempt and the response headers.']],
+  testing:['`pnpm test auth` passes, 31 tests.','Tried 12 wrong passwords locally. The 11th returned 429.']},
+ 'ENG-418':{summary:'Paginates the audit log API with cursors, returning 50 entries per page by default. Large workspaces no longer time out when loading the audit log.',
+  commits:[['Add cursor pagination to /audit-log','The cursor encodes the entry timestamp and ID.'],['Cap the page size at 200',''],['Update tests','']],
+  testing:['`pnpm test api` passes.','Loaded 12,000 entries locally in pages of 50.']},
+ 'ENG-427':{summary:'Upgrades ESLint from 8.57 to 9.12 and moves the config to the flat config format that version 9 requires.',
+  commits:[['Bump eslint and its plugins',''],['Move to eslint.config.js','Replaces `.eslintrc.json`.'],['Drop two unused plugins','Neither has an ESLint 9 release, and no rule used them.']],
+  testing:['`pnpm lint` passes with no new warnings.','All 3 local rules still run.']},
+ 'ENG-430':{summary:'Fixes the Import issues link in the onboarding checklist, which pointed to a page that moved.',
+  commits:[['Fix the importer link','']],
+  testing:['The link checker passes on all 9 links in the checklist.']},
+ 'ENG-433':{summary:'Adds accessible names to the icon-only buttons in the editor toolbar, so screen readers announce them. The labels reuse the existing tooltip text.',
+  commits:[['Add labels to 9 toolbar buttons','']],
+  testing:['The accessibility check finds 0 unnamed buttons.','Visual snapshots are unchanged.','Checked with VoiceOver in Safari.']},
+ 'ENG-416':{progress:['Drafted typed columns for theme, density and notification settings.','Wrote the migration that adds the columns.','Stopped before the backfill, which touches every user row.']},
+ 'ENG-436':{progress:['Found 14 projects with no issue or comment activity in 90 days.','Checked that none has an open issue assigned to anyone.']},
+ '1838':{changes:['Add one Notifications page, with a section each for email, desktop and mobile.','Redirect the three old settings URLs to the new page.','Remove the old per-channel settings components.'],testing:['`pnpm test settings` passes.','Checked each redirect in a local build.']},
+ '1842':{changes:['Add a Save filters action to the Projects view menu.','Store saved filters per user.','List saved filters in a new menu beside the filter button.'],testing:['Unit tests cover the saved filters API.','Created, renamed and deleted filters locally.']},
+ '1829':{changes:['Throttle the resize handler to one update per frame.','Move the sidebar width into a CSS variable.'],testing:['Checked in Chrome and Firefox. Safari still jumps on fast drags, as noted in the review.']},
+ '1851':{changes:['Cache the last 500 issues in IndexedDB.','Queue edits made offline and replay them on reconnect.'],testing:['Manual testing only. Not ready for review.']},
+ '1847':{changes:['Add Export CSV to the menu on every Insights chart.','Export with the chart’s current filters and grouping.','Stream large exports instead of building them in memory.'],testing:['Unit tests cover the CSV writer.','Exported a 40,000 row chart locally.']},
+ '1849':{changes:['Add cursor pagination to /cycles.','Keep offset pagination for one release, with a Deprecation header.','Update the API docs.'],testing:['`pnpm test api` passes.','Compared offset and cursor results on a seeded workspace.']},
+ '1844':{changes:['Remove unsafe-inline from script-src.','Move the two remaining inline scripts into files.','From your last review: the analytics snippet now loads from a file too.'],testing:['Ran the app with CSP violations logged to the console: none.','Updated the header tests.']},
+ '1840':{changes:['Rewrite the day 1, day 3 and day 7 emails.','Shorten the subject lines.','No template or schedule changes.'],testing:['Sent test emails to Gmail and Outlook.']}
+};
+const md=t=>esc(t).replace(/`([^`]+)`/g,'<code>$1</code>');
+const mdList=(items,ordered)=>`<${ordered?'ol':'ul'}>${items.map(x=>`<li>${x}</li>`).join('')}</${ordered?'ol':'ul'}>`;
+function descBlock(d,opts={}){
+  if(!d) return '';
+  let h=`<div class="md">`;
+  if(opts.from) h+=`<div class="from">Description from ${esc(opts.from)}</div>`;
+  if(d.summary||opts.summary) h+=`<h2>Summary</h2><p>${md(d.summary||opts.summary)}</p>`;
+  if(d.commits) h+=`<h3>Commits</h3>`+mdList(d.commits.map(([t,x])=>`<b>${md(t)}</b>${x?': '+md(x):''}`),true);
+  if(d.changes) h+=`<h3>Changes</h3>`+mdList(d.changes.map(md));
+  if(d.progress) h+=`<h2>Done so far</h2>`+mdList(d.progress.map(md));
+  if(d.testing) h+=`<h3>Testing</h3>`+mdList(d.testing.map(md));
+  return h+`</div>`;
+}
 /* ---------- details pane: Linear's pull request layout (header, body, sidebar) ---------- */
 const REPO='acme/web';
 const prNumOf=i=>{const p=PRS.find(x=>x.ref===i.id);return p?p.id:String(1860+ITEMS.indexOf(i))};
@@ -293,9 +355,9 @@ function renderPRDetail(){
   if(S.view==='diff') main+=diffView(files,p.id);
   else {
     if(p.agentPR){const i=get(p.ref), rk=risk(i);
-      main+=`<div class="qcard"><p>${esc(i.agent)} opened this pull request on an issue you delegated.</p><span style="font-size:13.5px;color:var(--muted)">It sits under ${STATUS_LABEL[p.status]} because its checks ${i.tests?'pass':'are still running'}. Nothing here shows whether it did what the issue asked. Agent work rates it <b style="color:var(--fg)">${LABEL[rk.level]}</b> and shows the evidence.</span></div>`;}
+      main+=`<div class="qcard"><p>${esc(i.agent)} opened this pull request on an issue you delegated.</p><span style="font-size:13.5px;color:var(--muted)">It sits under ${STATUS_LABEL[p.status]} because its checks ${i.tests?'pass':'are still running'}. Nothing here shows whether it did what the issue asked. Agent work rates it <b style="color:var(--fg)">${LABEL[rk.level]}</b> and shows the evidence.</span></div>`+descBlock(DESC[p.ref],{from:i.agent});}
     else {
-      main+=`<div class="dsec"><h2>Summary</h2><p class="sum">${esc(p.summary)}</p></div>`;
+      main+=descBlock(DESC[p.id]||{},{summary:p.summary});
       if(p.note) main+=`<div class="dsec"><h2>Changes requested</h2><ul class="crit"><li class="gap"><span class="ic n">!</span><div><div class="q">${esc(p.reviewers[0])}</div><div class="e">${esc(p.note.replace(/^[^:]+:\s*/,''))}</div></div></li></ul></div>`;
     }
   }
@@ -329,10 +391,11 @@ function renderDetail(){
   else {
     main+=`<div class="rk"><div class="l"><span class="pill ${rk.level}">${LABEL[rk.level]}</span><span style="font-size:14px">${i.q?'Waiting on you.':rk.level==='low'?'Safe to approve. Everything the issue asked for has proof.':rk.level==='typ'?(nFlag===1?'Check the flagged item, then approve.':`Check the ${nFlag} flagged items, then approve.`):`Read this one. ${nFlag} ${nFlag===1?'thing needs':'things need'} your eyes.`}</span></div>
       <details><summary>Why this rating</summary><ul>${rk.reasons.map(r=>`<li><span class="ic ${r.g?'g':'n'}">${r.g?'✓':'!'}</span>${esc(r.t)}</li>`).join('')}</ul></details></div>`;
-    if(i.q) main+=`<div class="qcard"><p>${esc(i.q.text)}</p><span style="font-size:13.5px;color:var(--muted)">${esc(i.q.ctx)}</span><div class="opts">${i.q.opts.map((o,k)=>`<button class="btn ${k===1?'pri':''}" type="button" data-act="answer" data-id="${i.id}" data-v="${k}">${esc(o)}</button>`).join('')}</div></div>`;
+    if(i.q) main+=`<div class="qcard"><p>${esc(i.q.text)}</p><span style="font-size:13.5px;color:var(--muted)">${esc(i.q.ctx)}</span><div class="opts">${i.q.opts.map((o,k)=>`<button class="btn ${k===1?'pri':''}" type="button" data-act="answer" data-id="${i.id}" data-v="${k}">${esc(o)}</button>`).join('')}</div></div>`+descBlock(DESC[i.id]);
     else {
       main+=`<div class="dsec"><h2>Intent and outcome<span class="nw">New</span><span class="hm">${i.criteria.length} criteria from ${i.id}</span></h2><ul class="crit">${i.criteria.map(c=>`<li class="${c.s==='gap'?'gap':''}"><span class="ic ${c.s==='ok'?'g':'n'}">${c.s==='ok'?'✓':'!'}</span><div><div class="q">${esc(c.q)}</div><div class="e">${esc(c.e)}</div></div></li>`).join('')}</ul></div>`;
       main+=`<div class="dsec"><h2>What the agent assumed<span class="nw">New</span></h2>${i.assume.length?`<ul class="assume">${i.assume.map((a,k)=>`<li class="${i.ov[k]?'ov':''}"><span>${esc(a)}</span><span class="bt"><button type="button" data-act="keep" data-id="${i.id}" data-k="${k}" aria-pressed="${!i.ov[k]}">Keep</button><button type="button" data-act="over" data-id="${i.id}" data-k="${k}" aria-pressed="${!!i.ov[k]}">Override</button></span></li>`).join('')}</ul>`:`<p class="sum mut">None. The agent followed existing patterns.</p>`}</div>`;
+      main+=descBlock(DESC[i.id],{from:i.agent});
     }
   }
   let side=sf('Status',i.q?`${IC('agent','agc')}Waiting on you`:`${IC('pr','okc')}Open`)

@@ -84,12 +84,23 @@ const matches=()=>ITEMS.filter(i=>i.st==='pending'&&!i.q&&RULES.every(r=>!S.rule
 let S;
 function fresh(){
   ITEMS.forEach(i=>{i.st='pending';i.ov={}});
-  S={sel:null,checked:new Set(),filter:'all',compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
+  S={sel:null,checked:new Set(),f:{source:null,agent:null,risk:null},d:{group:'risk',props:{id:true,agent:true,lines:true,age:true,risk:true}},menu:null,sub:null,compose:false,text:'',rulesOpen:false,open:{},toast:null,undo:null,tt:null,
      rules:{tests:true,docs:true,small:false,deps:false,sens:false,evid:false}};
   S.sel=(ordered()[0]||{}).id||null;
 }
 const get=id=>ITEMS.find(i=>i.id===id);
-function visible(){return ITEMS.filter(i=>i.st==='pending'&&(S.filter==='all'||i.from===S.filter))}
+const pend=()=>ITEMS.filter(i=>i.st==='pending');
+const pass=(i,skip)=>(skip==='source'||!S.f.source||i.from===S.f.source)&&(skip==='agent'||!S.f.agent||i.agent===S.f.agent)&&(skip==='risk'||!S.f.risk||risk(i).level===S.f.risk);
+function visible(){return pend().filter(i=>pass(i))}
+/* filter menu: each field lists its options with live counts */
+const FILTERS=[
+ {k:'source',l:'Source',ic:'loops',opts:()=>[['me','Delegated by me'],['loop','From Loops']],of:i=>i.from},
+ {k:'agent',l:'Agent',ic:'agent',opts:()=>[...new Set(ITEMS.map(i=>i.agent))].map(a=>[a,a]),of:i=>i.agent},
+ {k:'risk',l:'Risk',ic:'risk',opts:()=>[['ask','Question'],['high','High'],['med','Medium'],['low','Low risk']],of:i=>risk(i).level}];
+const PROPS=[['id','ID'],['agent','Agent'],['lines','Lines changed'],['age','Age'],['risk','Risk']];
+const fLabel=k=>{const F=FILTERS.find(x=>x.k===k),o=F.opts().find(o=>o[0]===S.f[k]);return o?o[1]:S.f[k]};
+const activeF=()=>FILTERS.filter(F=>S.f[F.k]);
+function keepSel(){const o=ordered();if(!o.find(i=>i.id===S.sel))S.sel=o[0]?o[0].id:null}
 function groups(){const g={ask:[],look:[],safe:[]};visible().forEach(i=>g[groupOf(i)].push(i));g.look.sort((a,b)=>risk(b).score-risk(a).score);return g}
 function ordered(){const g=groups();return [...g.ask,...g.look,...g.safe]}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -98,20 +109,27 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function pendingCount(){return ITEMS.filter(i=>i.st==='pending').length}
 function renderList(){
   const g=groups(), all=ordered();
-  let h=`<div class="lh"><div class="r"><b>Reviews</b><button class="btn sm" data-act="rules" type="button"><svg class="ico"><use href="#i-rules"/></svg>Review rules</button></div>
+  const P=S.d.props, nF=activeF().length;
+  let h=`<div class="lh"><div class="r"><b>Reviews</b><span class="hb">
+    <button class="ibtn" type="button" data-act="rules" data-tip="Review rules" aria-label="Review rules"><svg class="ico"><use href="#i-bolt"/></svg></button>
+    <button class="ibtn${S.menu==='filter'||nF?' on':''}" type="button" data-act="menu" data-v="filter" data-menu="filter" data-tip="Add Filter" data-k="F" aria-label="Add filter" aria-expanded="${S.menu==='filter'}"><svg class="ico"><use href="#i-filter"/></svg></button>
+    <button class="ibtn${S.menu==='display'?' on':''}" type="button" data-act="menu" data-v="display" data-menu="display" data-tip="Show display options" data-k="⇧ V" aria-label="Show display options" aria-expanded="${S.menu==='display'}"><svg class="ico"><use href="#i-display"/></svg></button></span></div>
   <div class="seg"><span class="tb" title="Existing Linear tab, outside this prototype">Created</span><span class="tb" title="Existing Linear tab, outside this prototype">To review</span><span class="tb on">Agent work<span class="cnt">${all.length}</span></span><span class="tb new">New</span></div>
-  <div class="seg f" role="group" aria-label="Filter">${[['all','All'],['me','Delegated by me'],['loop','From Loops']].map(([k,l])=>`<button type="button" data-act="filter" data-v="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join('')}</div></div>`;
-  if(!all.length) h+=`<div class="empty"><p>Nothing waiting in this view.</p></div>`;
-  GROUPS.forEach(({k,l})=>{
-    if(!g[k].length) return;
+  ${nF?`<div class="fchips">${activeF().map(F=>`<span class="fchip"><svg class="ico"><use href="#i-${F.ic}"/></svg>${F.l} <i>is</i> ${esc(fLabel(F.k))}<button type="button" data-act="unfilter" data-v="${F.k}" aria-label="Remove ${F.l} filter"><svg class="ico"><use href="#i-x"/></svg></button></span>`).join('')}${nF>1?'<button class="fclear" type="button" data-act="unfilter" data-v="all">Clear</button>':''}</div>`:''}</div>`;
+  if(!all.length) h+=nF?`<div class="empty"><p>No results match these filters.</p><button class="btn sm" type="button" data-act="unfilter" data-v="all">Clear filters</button></div>`:`<div class="empty"><p>Nothing waiting in this view.</p></div>`;
+  const flat=S.d.group==='none';
+  (flat?[{k:'all',l:''}]:GROUPS).forEach(({k,l})=>{
+    const rows=flat?all:g[k];
+    if(!rows.length) return;
     const allChecked=k==='safe'&&g[k].every(i=>S.checked.has(i.id));
-    h+=`<div class="gh"><span>${l}<span class="n">${g[k].length}</span></span>${k==='safe'?`<label><input type="checkbox" data-selall ${allChecked?'checked':''}>Select all</label>`:''}</div>`;
-    g[k].forEach(i=>{
-      const rk=risk(i);
-      h+=`<div class="rowwrap ${S.sel===i.id?'sel':''}">${k==='safe'?`<input type="checkbox" data-check="${i.id}" aria-label="Select ${esc(i.id)}" ${S.checked.has(i.id)?'checked':''}>`:''}
+    if(!flat) h+=`<div class="gh"><span>${l}<span class="n">${g[k].length}</span></span>${k==='safe'?`<label><input type="checkbox" data-selall ${allChecked?'checked':''}>Select all</label>`:''}</div>`;
+    else h+='<div style="height:6px"></div>';
+    rows.forEach(i=>{
+      const rk=risk(i), safe=groupOf(i)==='safe';
+      h+=`<div class="rowwrap ${S.sel===i.id?'sel':''}">${safe?`<input type="checkbox" data-check="${i.id}" aria-label="Select ${esc(i.id)}" ${S.checked.has(i.id)?'checked':''}>`:''}
       <button class="row" type="button" data-act="select" data-id="${i.id}" aria-current="${S.sel===i.id}">
         <svg class="ico ri ${i.q?'ag':'pr'}"><use href="#i-${i.q?'agent':'pr'}"/></svg><span class="t">${esc(i.title)}</span>
-        <span class="m"><span class="id">${i.id}</span><span><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span>${i.q?'':`<span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span>`}<span>${i.ago}</span><span class="pill ${rk.level}">${LABEL[rk.level]}</span></span>
+        <span class="m">${P.id?`<span class="id">${i.id}</span>`:''}${P.agent?`<span><span class="av${i.agent==='Linear Agent'?' la':''}">${i.agent[0]}</span>${i.agent}</span>`:''}${P.lines&&!i.q?`<span><span class="da">+${adds(i)}</span> <span class="dd">−${dels(i)}</span></span>`:''}${P.age?`<span>${i.ago}</span>`:''}${P.risk?`<span class="pill ${rk.level}">${LABEL[rk.level]}</span>`:''}</span>
       </button></div>`;
     });
   });
@@ -156,13 +174,41 @@ function renderRules(){
 function renderAll(){
   const app=document.getElementById('app');
   const ls=app.querySelector('.ls'), dt=app.querySelector('.dt'); const sl=ls?ls.scrollTop:0, sd=dt&&dt.dataset.sel===S.sel?dt.scrollTop:0;
-  app.innerHTML=`<aside class="sb"><div class="sbn" aria-hidden="true"><div class="ws"><span class="wsa">AE</span>Acme Eng<span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><span class="tm" style="flex:none">E</span><span>Engineering</span></div><div class="nv sub"><svg class="ico"><use href="#i-triage"/></svg><span>Triage</span><em>2</em></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div></div><div class="sbf"><div class="keys"><span><kbd>J</kbd><kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span></div><div class="acts"><a class="btn sm" href="index.html#prototype">← Case study</a><button class="btn sm" data-reset type="button">Reset demo</button></div></div></aside>
+  app.innerHTML=`<aside class="sb"><div class="sbn" aria-hidden="true"><div class="ws"><span class="wsa">AE</span>Acme Eng<span class="sp"></span><span class="ib"><svg class="ico"><use href="#i-search"/></svg></span><span class="ib c"><svg class="ico"><use href="#i-compose"/></svg></span></div><div class="nv"><svg class="ico"><use href="#i-inbox"/></svg><span>Inbox</span><em>3</em></div><div class="nv"><svg class="ico"><use href="#i-my"/></svg><span>My issues</span></div><div class="nv on"><svg class="ico"><use href="#i-pr"/></svg><span>Reviews</span><em>${pendingCount()}</em></div><div class="nv"><svg class="ico"><use href="#i-agent"/></svg><span>Agent</span></div><div class="sbh">Workspace</div><div class="nv"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div><div class="nv"><svg class="ico"><use href="#i-loops"/></svg><span>Loops</span></div><div class="nv"><svg class="ico"><use href="#i-more"/></svg><span>More</span></div><div class="sbh">Your teams</div><div class="nv team"><span class="tm" style="flex:none">E</span><span>Engineering</span></div><div class="nv sub"><svg class="ico"><use href="#i-triage"/></svg><span>Triage</span><em>2</em></div><div class="nv sub"><svg class="ico"><use href="#i-issues"/></svg><span>Issues</span></div><div class="nv sub"><svg class="ico"><use href="#i-projects"/></svg><span>Projects</span></div><div class="nv sub"><svg class="ico"><use href="#i-views"/></svg><span>Views</span></div></div><div class="sbf"><div class="keys"><span><kbd>J</kbd><kbd>K</kbd> move</span><span><kbd>A</kbd> approve</span><span><kbd>R</kbd> request changes</span><span><kbd>X</kbd> select</span><span><kbd>E</kbd> take over</span><span><kbd>F</kbd> filter</span></div><div class="acts"><a class="btn sm" href="index.html#prototype">← Case study</a><button class="btn sm" data-reset type="button">Reset demo</button></div></div></aside>
     <section class="ls" aria-label="Review queue">${renderList()}</section>
     <section class="dt" data-sel="${S.sel}" aria-label="Evidence">${renderDetail()}</section>
+    ${S.menu?renderMenu():''}
     ${S.rulesOpen?renderRules():''}
     ${S.checked.size?`<div class="toast" role="status"><span>${S.checked.size} selected</span><button type="button" data-act="batch">Approve ${S.checked.size}</button></div>`:S.toast?`<div class="toast" role="status"><span>${esc(S.toast)}</span>${S.undo?'<button type="button" data-act="undo">Undo</button>':''}</div>`:''}`;
   const l2=app.querySelector('.ls'), d2=app.querySelector('.dt'); if(l2)l2.scrollTop=sl; if(d2)d2.scrollTop=sd;
+  placeMenu();
 }
+function renderMenu(){
+  let h='<div class="veil" data-act="menuclose"></div>';
+  if(S.menu==='filter'){
+    h+=`<div class="pop fm" role="menu" aria-label="Add filter"><div class="ph"><span>Add Filter…</span><kbd>F</kbd></div><div class="pl">${FILTERS.map(F=>`<button type="button" role="menuitem" class="mi${S.sub===F.k?' on':''}" data-act="sub" data-v="${F.k}" aria-haspopup="true" aria-expanded="${S.sub===F.k}"><svg class="ico"><use href="#i-${F.ic}"/></svg><span>${F.l}</span>${S.f[F.k]?'<em class="dot"></em>':''}<svg class="ico car"><use href="#i-caret"/></svg></button>`).join('')}</div>`;
+    const F=FILTERS.find(x=>x.k===S.sub);
+    if(F){const base=pend().filter(i=>pass(i,F.k));
+      h+=`<div class="pop sub" role="menu" aria-label="${F.l}">${F.opts().map(([v,l])=>{const n=base.filter(i=>F.of(i)===v).length;return `<button type="button" role="menuitemradio" aria-checked="${S.f[F.k]===v}" class="mi" data-act="setf" data-k="${F.k}" data-v="${esc(v)}"><span class="ck">${S.f[F.k]===v?'<svg class="ico"><use href="#i-check"/></svg>':''}</span><span>${esc(l)}</span><em>${n}</em></button>`}).join('')}</div>`}
+    h+='</div>';
+  } else {
+    h+=`<div class="pop dm" role="dialog" aria-label="Display options"><div class="dr"><label for="dgrp">Grouping</label><select id="dgrp" data-disp="group"><option value="risk"${S.d.group==='risk'?' selected':''}>Risk</option><option value="none"${S.d.group==='none'?' selected':''}>No grouping</option></select></div>
+      <div class="dr"><span>Ordering</span><span class="fixed">Risk, then age</span></div>
+      <div class="dsep"></div><div class="dlab">Display properties</div><div class="props">${PROPS.map(([k,l])=>`<button type="button" class="prop" data-act="prop" data-v="${k}" aria-pressed="${S.d.props[k]}">${l}</button>`).join('')}</div></div>`;
+  }
+  return h;
+}
+function placeMenu(){
+  if(!S.menu) return;
+  const app=document.getElementById('app'), b=app.querySelector(`[data-menu="${S.menu}"]`), p=app.querySelector('.pop.fm,.pop.dm'); if(!b||!p) return;
+  const ar=app.getBoundingClientRect(), br=b.getBoundingClientRect();
+  p.style.top=(br.bottom-ar.top+6)+'px';
+  p.style.left=Math.max(8,Math.min(br.left-ar.left, ar.width-p.offsetWidth-8))+'px';
+  const s=p.querySelector('.pop.sub'); if(s){const mi=p.querySelector('.mi.on'), pr=p.getBoundingClientRect();
+    const fits=pr.right+4+s.offsetWidth<=ar.right-8;
+    s.style.left=(fits?p.offsetWidth+4:-s.offsetWidth-4)+'px'; s.style.top=((mi?mi.offsetTop:0)-6)+'px';}
+}
+function openMenu(m){S.menu=S.menu===m?null:m;S.sub=m==='filter'?'source':null;renderAll()}
 function toast(msg,undo){S.toast=msg;if(!undo)S.undo=null;clearTimeout(S.tt);S.tt=setTimeout(()=>{S.toast=null;S.undo=null;renderAll()},7000)}
 function apply(ids,st,msg){
   const before=ordered().map(i=>i.id), idx=Math.max(0,before.indexOf(S.sel));
@@ -181,7 +227,12 @@ appEl.addEventListener('click',e=>{
   const a=t.dataset.act, id=t.dataset.id;
   if(a==='rulesbg'){if(e.target!==t)return;S.rulesOpen=false;return renderAll()}
   if(a==='select'){S.sel=id;S.compose=false;S.text='';renderAll()}
-  else if(a==='filter'){S.filter=t.dataset.v;const o=ordered();if(!o.find(i=>i.id===S.sel))S.sel=o[0]?o[0].id:null;renderAll()}
+  else if(a==='menu'){openMenu(t.dataset.v)}
+  else if(a==='menuclose'){S.menu=null;S.sub=null;renderAll()}
+  else if(a==='sub'){S.sub=t.dataset.v;renderAll()}
+  else if(a==='setf'){const k=t.dataset.k,v=t.dataset.v;S.f[k]=S.f[k]===v?null:v;S.menu=null;S.sub=null;S.checked.clear();keepSel();renderAll()}
+  else if(a==='unfilter'){const v=t.dataset.v;if(v==='all')S.f={source:null,agent:null,risk:null};else S.f[v]=null;keepSel();renderAll()}
+  else if(a==='prop'){const v=t.dataset.v;S.d.props[v]=!S.d.props[v];renderAll()}
   else if(a==='approve'){const i=get(id);apply([id],'approved','Approved '+id+'. Merging now.')}
   else if(a==='compose'){S.compose=true;renderAll();const c=document.getElementById('cmt');if(c)c.focus()}
   else if(a==='cancel'){S.compose=false;S.text='';renderAll()}
@@ -195,7 +246,7 @@ appEl.addEventListener('click',e=>{
   else if(a==='diff'){S.open[t.dataset.key]=!S.open[t.dataset.key];renderAll()}
   else if(a==='undo'&&S.undo){const u=S.undo;u.ids.forEach((x,k)=>{get(x).st=u.prev[k]});S.sel=u.sel;S.toast=null;S.undo=null;renderAll()}
   else if(a==='batch'){const ids=[...S.checked];apply(ids,'approved','Approved '+ids.length+' results. Merging now.')}
-  else if(a==='rules'){S.rulesOpen=true;renderAll()}
+  else if(a==='rules'){S.menu=null;S.rulesOpen=true;renderAll()}
   else if(a==='rulesclose'){S.rulesOpen=false;renderAll()}
   else if(a==='rulessave'){const ids=matches().map(i=>i.id);S.rulesOpen=false;apply(ids,'auto','Rules saved. '+ids.length+' result'+(ids.length>1?'s':'')+' approved automatically.')}
 });
@@ -204,6 +255,7 @@ appEl.addEventListener('change',e=>{
   if(t.dataset.check){t.checked?S.checked.add(t.dataset.check):S.checked.delete(t.dataset.check);renderAll()}
   else if(t.hasAttribute('data-selall')){groups().safe.forEach(i=>t.checked?S.checked.add(i.id):S.checked.delete(i.id));renderAll()}
   else if(t.dataset.rule){S.rules[t.dataset.rule]=t.checked;renderAll()}
+  else if(t.dataset.disp==='group'){S.d.group=t.value;renderAll()}
 });
 appEl.addEventListener('input',e=>{if(e.target.id==='cmt')S.text=e.target.value});
 document.addEventListener('click',e=>{if(e.target.closest('[data-reset]')){fresh();renderAll()}});
@@ -211,6 +263,9 @@ document.addEventListener('keydown',e=>{
   if(!inProto()||e.metaKey||e.ctrlKey||e.altKey) return;
   const tg=e.target; if(tg&&(tg.tagName==='TEXTAREA'||tg.tagName==='INPUT'&&tg.type==='text')){if(e.key==='Escape'){S.compose=false;renderAll()}return}
   if(S.rulesOpen){if(e.key==='Escape'){S.rulesOpen=false;renderAll()}return}
+  if(S.menu){if(e.key==='Escape'){S.menu=null;S.sub=null;renderAll()}return}
+  if(e.key==='f'&&!e.shiftKey){e.preventDefault();return openMenu('filter')}
+  if(e.key==='V'&&e.shiftKey){e.preventDefault();return openMenu('display')}
   const k=e.key.toLowerCase(), i=get(S.sel);
   if(k==='j'||k==='arrowdown'){e.preventDefault();move(1)}
   else if(k==='k'||k==='arrowup'){e.preventDefault();move(-1)}

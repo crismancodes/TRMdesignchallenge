@@ -7,6 +7,7 @@ The case study (`index.html`) has five tabs: **Problem**, **Explorations**, **Pr
 | File | What it is |
 | --- | --- |
 | `index.html` | The case study |
+| `explorations.html` | Mockups of the three explored directions, opened from the Explorations tab |
 | `prototype.html` | The full-screen prototype |
 | `prototype.js` | Prototype data and behavior |
 | `styles.css` | Shared Linear-style theme for both pages |
